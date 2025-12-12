@@ -86,7 +86,6 @@ fun SignInView(
             }
         }
 
-        // ---- CENTERED CONTENT ----
         Box(
             modifier = Modifier
                 .fillMaxSize()

@@ -245,7 +245,6 @@ fun SignUpView(
     }
 }
 
-// --- REUSABLE FIELD COLORS (exactly matches SignInView) ---
 @Composable
 private fun outlinedFieldColors() =
     OutlinedTextFieldDefaults.colors(
