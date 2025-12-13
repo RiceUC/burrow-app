@@ -1,5 +1,7 @@
 package com.clarice.burrow.data.remote
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import retrofit2.Response
 
 /**
@@ -14,6 +16,12 @@ sealed class NetworkResult<T>(
     class Error<T>(message: String, data: T? = null) : NetworkResult<T>(data, message)
     class Loading<T> : NetworkResult<T>()
 }
+
+/**
+ * Generic error response from backend to encapsulate different error formats.
+ */
+data class ErrorResponse(val errors: Any?, val message: String?)
+
 
 /**
  * Extension function to safely handle API calls
@@ -49,16 +57,46 @@ suspend fun <T> safeApiCall(
 }
 
 /**
- * Parse error message from backend response
- * Your backend returns errors in this format: { "errors": "error message" }
+ * Parse error message from backend response.
+ * This function is designed to handle multiple common error response formats.
  */
 private fun parseErrorMessage(errorBody: String?): String? {
+    if (errorBody == null) return null
+    val gson = Gson()
+
     return try {
-        errorBody?.let {
-            val regex = """"errors"\s*:\s*"([^"]+)"""".toRegex()
-            regex.find(it)?.groupValues?.get(1)
+        // Attempt to parse into a structured error object
+        val errorResponse = gson.fromJson(errorBody, ErrorResponse::class.java)
+
+        // 1. Check for a map of validation errors in "errors"
+        if (errorResponse.errors is Map<*, *>) {
+            return (errorResponse.errors as Map<*, *>).map { (key, value) ->
+                val messages = (value as? List<*>)?.joinToString(", ") ?: value.toString()
+                "$key: $messages"
+            }.joinToString("\n")
         }
+
+        // 2. Check for a list of errors in "errors"
+        if (errorResponse.errors is List<*>) {
+            return (errorResponse.errors as List<*>).joinToString(", ")
+        }
+        
+        // 3. Check for a single error string in "errors"
+        if (errorResponse.errors is String) {
+            return errorResponse.errors
+        }
+
+        // 4. Check for a top-level "message" field
+        if (errorResponse.message != null) {
+            return errorResponse.message
+        }
+        
+        // 5. Fallback for other JSON structures like {"error": "message"}
+        val errorMap: Map<String, Any> = gson.fromJson(errorBody, object : TypeToken<Map<String, Any>>() {}.type)
+        errorMap["error"]?.toString() ?: errorBody
+
     } catch (e: Exception) {
+        // If JSON parsing fails, the body might be a plain string
         errorBody
     }
 }

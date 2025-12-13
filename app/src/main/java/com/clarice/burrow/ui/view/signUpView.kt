@@ -52,6 +52,11 @@ fun SignUpView(
     var passwordVisible by remember { mutableStateOf(false) }
     var gender by remember { mutableStateOf("Female") }
 
+    // Initialize gender in view model
+    LaunchedEffect(Unit) {
+        viewModel.updateRegisterGender(gender)
+    }
+
     // Date picker
     val calendar = Calendar.getInstance()
     val datePicker = DatePickerDialog(

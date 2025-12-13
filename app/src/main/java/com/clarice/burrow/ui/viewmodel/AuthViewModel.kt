@@ -162,7 +162,8 @@ class AuthViewModel(context: Context) : ViewModel() {
                 password = registerState.password,
                 name = registerState.name,
                 birthdate = registerState.birthdate.ifBlank { null },
-                gender = registerState.gender.ifBlank { null }
+                gender = registerState.gender.ifBlank { null },
+                defaultSoundDuration = 30 // Default value for sound duration
             )
 
             when (result) {
