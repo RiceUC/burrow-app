@@ -3,7 +3,6 @@ package com.clarice.burrow.ui.view
 import android.app.TimePickerDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,14 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,39 +83,11 @@ fun SleepTrackerView(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Moon icon
-                            Text(
-                                text = "🌙",
-                                fontSize = 28.sp,
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-
-                            Column {
-                                Text(
-                                    text = "Sleep Tracker",
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = "~ a safe place to relax after a long day ~",
-                                    fontSize = 11.sp,
-                                    color = Color.White.copy(alpha = 0.7f)
-                                )
-                            }
-                        }
-                    }
-
+                    Spacer(modifier = Modifier.weight(1f))
                     // Statistics Button
                     Button(
                         onClick = onStatisticsClick,
@@ -139,7 +108,23 @@ fun SleepTrackerView(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Sleep Tracker",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                Text(
+                    text = "~ a safe place to relax after a long day ~",
+                    fontSize = 11.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+
                 Spacer(modifier = Modifier.height(24.dp))
+
 
                 // Circular Clock with Bunny
                 Box(
@@ -219,7 +204,7 @@ fun SleepTrackerView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Sleep Time Cards
                 Row(
@@ -265,7 +250,7 @@ fun SleepTrackerView(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Reminder Time Card
                 Card(
