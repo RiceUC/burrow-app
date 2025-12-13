@@ -33,7 +33,6 @@ fun MusicPlayerView(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // BACKGROUND
         Image(
             painter = painterResource(R.drawable.musicplayerview),
             contentDescription = null,
@@ -47,7 +46,6 @@ fun MusicPlayerView(
                 .padding(24.dp)
         ) {
 
-            // ---------------- TOP BAR ----------------
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -63,7 +61,6 @@ fun MusicPlayerView(
                 )
             }
 
-            // ---------------- CENTER CONTENT ----------------
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -72,7 +69,6 @@ fun MusicPlayerView(
                 verticalArrangement = Arrangement.Center
             ) {
 
-                // TITLE
                 Text(
                     text = music?.title ?: "-",
                     color = Color.White,
@@ -91,7 +87,6 @@ fun MusicPlayerView(
 
                 Spacer(modifier = Modifier.height(36.dp))
 
-                // PLAYER CONTROLS
                 PlayerControls(
                     isPlaying = isPlaying,
                     onPlayPause = { vm.togglePlay() },
@@ -101,7 +96,6 @@ fun MusicPlayerView(
 
                 Spacer(modifier = Modifier.height(36.dp))
 
-                // ---------------- SLIDER (CENTERED) ----------------
                 Column(
                     modifier = Modifier.fillMaxWidth(0.85f),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -144,7 +138,6 @@ fun PlayerControls(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // REWIND
         Icon(
             painter = painterResource(R.drawable.rewind_15),
             contentDescription = "rewind",
@@ -154,7 +147,6 @@ fun PlayerControls(
                 .clickable { onRewind() }
         )
 
-        // PLAY / PAUSE
         Box(
             modifier = Modifier
                 .size(110.dp)
@@ -172,7 +164,6 @@ fun PlayerControls(
             )
         }
 
-        // FORWARD
         Icon(
             painter = painterResource(R.drawable.forward_15),
             contentDescription = "forward",
@@ -198,7 +189,6 @@ fun PlayerSection(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // Rewind 15
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 painter = painterResource(id = R.drawable.rewind_15),
@@ -211,7 +201,6 @@ fun PlayerSection(
             Text("15", color = Color.White, fontSize = 14.sp)
         }
 
-        // Play / Pause
         Box(
             modifier = Modifier
                 .size(110.dp)
@@ -228,7 +217,6 @@ fun PlayerSection(
             )
         }
 
-        // Forward 15
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 painter = painterResource(id = R.drawable.forward_15),

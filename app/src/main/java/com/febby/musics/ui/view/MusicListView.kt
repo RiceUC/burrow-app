@@ -48,7 +48,6 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
                 .padding(16.dp)
         ) {
 
-            // TOP BAR
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -105,7 +104,6 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
 
             Spacer(Modifier.height(20.dp))
 
-            // ABOUT TO SLEEP
             Text("About to sleep", color = Color.White)
             Spacer(Modifier.height(10.dp))
 
@@ -127,7 +125,6 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
 
             Spacer(Modifier.height(20.dp))
 
-            // WHILE SLEEPING
             Text("While sleeping", color = Color.White)
             Spacer(Modifier.height(10.dp))
 
