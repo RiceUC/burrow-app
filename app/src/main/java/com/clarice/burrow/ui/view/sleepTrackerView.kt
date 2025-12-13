@@ -195,7 +195,7 @@ fun SleepTrackerView(
 
                 // Circular Clock with Bunny
                 Box(
-                    modifier = Modifier.size(280.dp),
+                    modifier = Modifier.size(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     // Outer circle with gradient border
