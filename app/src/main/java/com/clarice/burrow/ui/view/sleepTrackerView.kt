@@ -253,7 +253,7 @@ fun SleepTrackerView(
                                     painter = painterResource(id = R.drawable.bunnysleep),
                                     contentDescription = "Sleeping Bunny",
                                     modifier = Modifier
-                                        .size(140.dp)
+                                        .size(120.dp)
                                         .align(Alignment.Center)
                                 )
                             }

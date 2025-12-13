@@ -67,6 +67,7 @@ fun SignInView(
                 .padding(top = 32.dp, start = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Spacer(Modifier.height(36.dp))
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -115,10 +116,14 @@ fun SignInView(
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFF2E235C),
+                        unfocusedTextColor = Color(0xFF2E235C),
                         unfocusedBorderColor = Color.Transparent,
                         focusedBorderColor = Color(0xFFB0C0FF),
                         unfocusedContainerColor = Color(0xFFF1F3F9),
-                        focusedContainerColor = Color(0xFFF1F3F9)
+                        focusedContainerColor = Color(0xFFF1F3F9),
+                        focusedPlaceholderColor = Color(0xFF2E235C).copy(alpha = 0.4f),
+                        unfocusedPlaceholderColor = Color(0xFF2E235C).copy(alpha = 0.4f)
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !loginState.isLoading
@@ -137,10 +142,14 @@ fun SignInView(
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFF2E235C),
+                        unfocusedTextColor = Color(0xFF2E235C),
                         unfocusedBorderColor = Color.Transparent,
                         focusedBorderColor = Color(0xFFB0C0FF),
                         unfocusedContainerColor = Color(0xFFF1F3F9),
-                        focusedContainerColor = Color(0xFFF1F3F9)
+                        focusedContainerColor = Color(0xFFF1F3F9),
+                        focusedPlaceholderColor = Color(0xFF2E235C).copy(alpha = 0.4f),
+                        unfocusedPlaceholderColor = Color(0xFF2E235C).copy(alpha = 0.4f)
                     ),
                     visualTransformation = if (passwordVisible)
                         VisualTransformation.None

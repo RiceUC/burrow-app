@@ -88,11 +88,13 @@ fun SignUpView(
 
         // Back button
         Row(
+
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 32.dp, start = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Spacer(Modifier.height(20.dp))
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -169,7 +171,12 @@ fun SignUpView(
                 OutlinedTextField(
                     value = if (dob.isNotBlank()) formatDateForDisplay(dob) else "",
                     onValueChange = { },
-                    placeholder = { Text("Date of birth") },
+                    placeholder = {
+                        Text(
+                            text = "Date of birth",
+                            color = Color(0xFF2E235C).copy(alpha = 0.4f)
+                        )
+                    },
                     singleLine = true,
                     readOnly = true,
                     trailingIcon = {
@@ -354,12 +361,16 @@ fun SignUpView(
 @Composable
 private fun outlinedFieldColors() =
     OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color(0xFF2E235C),
+        unfocusedTextColor = Color(0xFF2E235C),
         unfocusedBorderColor = Color.Transparent,
         focusedBorderColor = Color(0xFFB0C0FF),
         unfocusedContainerColor = Color(0xFFF1F3F9),
         focusedContainerColor = Color(0xFFF1F3F9),
         disabledContainerColor = Color(0xFFF1F3F9),
-        disabledBorderColor = Color.Transparent
+        disabledBorderColor = Color.Transparent,
+        focusedPlaceholderColor = Color(0xFF2E235C).copy(alpha = 0.4f),
+        unfocusedPlaceholderColor = Color(0xFF2E235C).copy(alpha = 0.4f)
     )
 
 @Composable
