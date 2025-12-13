@@ -1,7 +1,7 @@
 package com.clarice.burrow.ui.navigation
 
+import SignInView
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
@@ -15,9 +15,9 @@ import com.clarice.burrow.ui.screens.WelcomeView
 import com.clarice.burrow.ui.view.SleepTrackerView
 import com.clarice.burrow.ui.view.StatisticsView
 import com.clarice.burrow.ui.viewmodel.AuthViewModel
-import SignInView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -26,7 +26,6 @@ fun NavGraph(
     authViewModel: AuthViewModel
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    val context = LocalContext.current
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"
@@ -54,14 +53,10 @@ fun NavGraph(
                 onBack = {
                     navController.navigateUp()
                 },
-                onLogin = { email, password ->
-                    authViewModel.updateLoginUsername(email)
-                    authViewModel.updateLoginPassword(password)
-                    authViewModel.login {
-                        // Navigate to main app on success
-                        navController.navigate("sleep_tracker") {
-                            popUpTo("welcome") { inclusive = true }
-                        }
+                onLoginSuccess = {
+                    // Navigate to main app on success
+                    navController.navigate("sleep_tracker") {
+                        popUpTo("welcome") { inclusive = true }
                     }
                 },
                 onSignUp = {
@@ -81,18 +76,10 @@ fun NavGraph(
                         popUpTo("sign_up") { inclusive = true }
                     }
                 },
-                onSignUp = { name, username, dob, password, gender ->
-                    authViewModel.updateRegisterName(name)
-                    authViewModel.updateRegisterUsername(username)
-                    authViewModel.updateRegisterPassword(password)
-                    authViewModel.updateRegisterBirthdate(dob)
-                    authViewModel.updateRegisterGender(gender)
-
-                    authViewModel.register {
-                        // Navigate to sign in after successful registration
-                        navController.navigate("sign_in") {
-                            popUpTo("sign_up") { inclusive = true }
-                        }
+                onSignUpSuccess = {
+                    // Navigate to sign in after successful registration
+                    navController.navigate("sign_in") {
+                        popUpTo("sign_up") { inclusive = true }
                     }
                 }
             )
@@ -141,7 +128,6 @@ fun NavGraph(
 
         // Journal List Screen
         composable("journal_list") {
-            // TODO: Create JournalListView
             PlaceholderScreen(
                 title = "Journal",
                 currentRoute = "journal_list",
@@ -163,7 +149,6 @@ fun NavGraph(
             arguments = listOf(navArgument("id") { type = NavType.IntType })
         ) { backStackEntry ->
             val journalId = backStackEntry.arguments?.getInt("id") ?: 0
-            // TODO: Create JournalEntryView
             PlaceholderScreen(
                 title = "Journal Entry #$journalId",
                 currentRoute = "journal_entry",
@@ -175,7 +160,6 @@ fun NavGraph(
 
         // Music List Screen
         composable("music_list") {
-            // TODO: Create MusicListView
             PlaceholderScreen(
                 title = "Music",
                 currentRoute = "music_list",
@@ -193,7 +177,6 @@ fun NavGraph(
 
         // Music Player Screen
         composable("music_player") {
-            // TODO: Create MusicPlayerView
             PlaceholderScreen(
                 title = "Music Player",
                 currentRoute = "music_player",
@@ -205,7 +188,6 @@ fun NavGraph(
 
         // Edit Profile Screen
         composable("edit_profile") {
-            // TODO: Create EditProfileView
             PlaceholderScreen(
                 title = "Profile",
                 currentRoute = "edit_profile",

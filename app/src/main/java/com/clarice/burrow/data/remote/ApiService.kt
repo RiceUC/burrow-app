@@ -1,6 +1,9 @@
 // File: app/src/main/java/com/clarice/burrow/data/remote/ApiService.kt
 package com.clarice.burrow.data.remote
 
+import com.clarice.burrow.ui.model.auth.RegisterRequest
+import com.clarice.burrow.ui.model.auth.LoginRequest
+import com.clarice.burrow.ui.model.auth.UpdateProfileRequest
 import com.clarice.burrow.ui.model.auth.*
 import com.clarice.burrow.ui.model.common.ApiResponse
 import com.clarice.burrow.ui.model.sleep.SleepSession
@@ -89,17 +92,4 @@ data class SleepStatistics(
     val total_sleep_time: Int, // in minutes
     val best_sleep_quality: Int,
     val worst_sleep_quality: Int
-)
-
-/**
- * Register Request Model
- */
-data class RegisterRequest(
-    val username: String,
-    val password: String,
-    val name: String,
-    val birthdate: String? = null,
-    val default_sound_duration: Int? = null,
-    val reminder_time: String? = null,
-    val gender: String? = null
 )

@@ -13,12 +13,7 @@ import java.util.concurrent.TimeUnit
  * RetrofitClient - Singleton for Retrofit instance
  */
 object RetrofitClient {
-
-    // TODO: Replace with your actual backend URL
-    // For Android Emulator: "http://10.0.2.2:3000/"
-    // For physical device: "http://YOUR_LOCAL_IP:3000/"
-    // For production: "https://your-api.com/"
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "http://localhost:3000/"
 
     private var apiService: ApiService? = null
 
