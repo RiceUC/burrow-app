@@ -1,6 +1,6 @@
 package com.clarice.burrow.ui.navigation
 
-import SignInView
+import com.clarice.burrow.ui.view.SignInView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
