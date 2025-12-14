@@ -1,6 +1,5 @@
 package com.kiara.journal.ui.journal
 
-import android.inputmethodservice.Keyboard
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,11 +42,11 @@ fun formatDateFromIso(isoDateString: String): String {
         val zonedDateTime = ZonedDateTime.parse(isoDateString)
         val localDate = zonedDateTime.toLocalDate()
 
-        val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")  // "13 Dec 2025"
+        val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
         localDate.format(formatter)
     } catch (e: Exception) {
         Log.e("DateFormat", "Failed to parse date: $isoDateString, error: ${e.message}")
-        isoDateString.substringBefore("T")  // Return "2025-12-13"
+        isoDateString.substringBefore("T")
     }
 }
 
@@ -257,7 +256,7 @@ fun BottomBarItem(
 @Composable
 fun JournalCard(journal: Journal, onClick: () -> Unit) {
 
-    Keyboard.Row(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(92.dp)
@@ -271,7 +270,7 @@ fun JournalCard(journal: Journal, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
 
             Text(
-                text = formatDateFromIso(journal.date),  // 🆕 USE: Format date!
+                text = formatDateFromIso(journal.date),
                 fontSize = 18.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -305,3 +304,4 @@ fun JournalCard(journal: Journal, onClick: () -> Unit) {
         )
     }
 }
+

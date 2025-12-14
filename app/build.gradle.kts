@@ -75,6 +75,21 @@ dependencies {
 
 
 
+    // CORE
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+
+    // COMPOSE
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+
+    // NAVIGATION COMPOSE
+    implementation("androidx.navigation:navigation-compose:2.8.2")
+
     // VIEWMODEL + LIVEDATA
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
     implementation("androidx.compose.runtime:runtime-livedata")
@@ -96,6 +111,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
+    //  DATASTORE (untuk local storage - simpan userId)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    //  LIFECYCLE (sudah ada tapi pastiin lengkap)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
 
     // DEBUGGING
     debugImplementation(libs.androidx.compose.ui.tooling)
@@ -110,13 +131,16 @@ dependencies {
     // Material rounded icons
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
 
-    // Navigation compose (versi stabil)
-        implementation("androidx.navigation:navigation-compose:2.8.2")
+// Navigation compose (versi stabil)
+    implementation("androidx.navigation:navigation-compose:2.8.2")
 
-    // LiveData runtime for Compose
-        implementation("androidx.compose.runtime:runtime-livedata")
+// LiveData runtime for Compose
+    implementation("androidx.compose.runtime:runtime-livedata")
 
-    // material (for SwipeToDismiss) and foundation
-        implementation("androidx.compose.material:material:1.6.8")
-        implementation("androidx.compose.foundation:foundation:1.6.8")
+// Coil untuk load drawable (opsional, but helpful)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+// material (for SwipeToDismiss) and foundation
+    implementation("androidx.compose.material:material:1.6.8")
+    implementation("androidx.compose.foundation:foundation:1.6.8")
     }
