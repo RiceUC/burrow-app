@@ -106,7 +106,7 @@ fun StatisticsView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                // Spacer(modifier = Modifier.height(0.dp))
 
                 // Title
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -236,8 +236,7 @@ fun StatisticsView(
                             modifier = Modifier.weight(1f),
                             label = "Best Quality",
                             value = getQualityEmoji(stats.best_sleep_quality),
-                            icon = "⭐",
-                            showDot = true
+                            icon = "⭐"
                         )
 
                         // Average Quality Card
