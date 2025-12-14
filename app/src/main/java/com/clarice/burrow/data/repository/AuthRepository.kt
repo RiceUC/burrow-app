@@ -27,7 +27,7 @@ class AuthRepository(
             name = name,
             birthdate = birthdate,
             defaultSoundDuration = defaultSoundDuration,
-            reminderTime = reminderTime,
+            reminder_time = reminderTime,
             gender = gender
         )
 

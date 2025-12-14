@@ -9,7 +9,7 @@ data class RegisterRequest(
     val name: String,
     val birthdate: String?,
     val defaultSoundDuration: Int?,
-    val reminderTime: String?,
+    val reminder_time: String?,
     val gender: String?
 )
 
