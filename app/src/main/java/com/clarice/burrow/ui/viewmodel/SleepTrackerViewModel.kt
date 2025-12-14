@@ -63,7 +63,10 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
      * Start a new sleep session
      */
     fun startSleepSession(onSuccess: () -> Unit = {}) {
-        if (getCurrentState() != SleepSessionState.IDLE) {
+        val currentState = getCurrentState()
+        android.util.Log.d("SleepTracker", "startSleepSession called, current state: $currentState")
+
+        if (currentState != SleepSessionState.IDLE) {
             sleepState = sleepState.copy(error = "Cannot start: session already exists")
             return
         }
@@ -77,14 +80,16 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
             when (result) {
                 is NetworkResult.Success -> {
                     val session = result.data?.data
+                    android.util.Log.d("SleepTracker", "Session started successfully: $session")
                     sleepState = sleepState.copy(
                         isStarting = false,
-                        currentSession = session?.copy(endTime = null),
+                        currentSession = session,
                         error = null
                     )
                     onSuccess()
                 }
                 is NetworkResult.Error -> {
+                    android.util.Log.e("SleepTracker", "Failed to start session: ${result.message}")
                     sleepState = sleepState.copy(
                         isStarting = false,
                         error = result.message ?: "Failed to start sleep session"
@@ -106,7 +111,10 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         sleepQuality: Int? = null,
         onSuccess: () -> Unit = {}
     ) {
-        if (getCurrentState() != SleepSessionState.ACTIVE) {
+        val currentState = getCurrentState()
+        android.util.Log.d("SleepTracker", "endSleepSession called, current state: $currentState")
+
+        if (currentState != SleepSessionState.ACTIVE) {
             sleepState = sleepState.copy(error = "Cannot end: no active session")
             return
         }
@@ -130,14 +138,18 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
             when (result) {
                 is NetworkResult.Success -> {
                     val completedSession = result.data?.data
+                    android.util.Log.d("SleepTracker", "Session ended successfully: $completedSession")
                     sleepState = sleepState.copy(
                         isEnding = false,
                         currentSession = completedSession,
                         error = null
                     )
+                    // Reload sessions to update history
+                    loadSleepSessions()
                     onSuccess()
                 }
                 is NetworkResult.Error -> {
+                    android.util.Log.e("SleepTracker", "Failed to end session: ${result.message}")
                     sleepState = sleepState.copy(
                         isEnding = false,
                         error = result.message ?: "Failed to end sleep session"
@@ -156,7 +168,10 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
      * Reset/clear the completed session and return to IDLE state
      */
     fun resetSession() {
-        if (getCurrentState() != SleepSessionState.COMPLETED) {
+        val currentState = getCurrentState()
+        android.util.Log.d("SleepTracker", "resetSession called, current state: $currentState")
+
+        if (currentState != SleepSessionState.COMPLETED) {
             sleepState = sleepState.copy(error = "Cannot reset: session not completed")
             return
         }
@@ -166,8 +181,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
             error = null
         )
 
-        // Reload sessions to update history
-        loadSleepSessions()
+        android.util.Log.d("SleepTracker", "Session reset, new state: ${getCurrentState()}")
     }
 
     // ==================== LOAD SLEEP SESSIONS ====================
@@ -214,6 +228,10 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
             when (result) {
                 is NetworkResult.Success -> {
+                    // If we deleted the current session, clear it
+                    if (sleepState.currentSession?.sessionId == sessionId) {
+                        sleepState = sleepState.copy(currentSession = null)
+                    }
                     loadSleepSessions() // Refresh the list
                     onSuccess()
                 }
@@ -271,6 +289,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     /**
      * Check if there's an active or completed session
+     * THIS IS THE KEY FIX - Only set currentSession if it's truly ACTIVE (no end_time)
      */
     private fun checkActiveSession() {
         viewModelScope.launch {
@@ -278,14 +297,22 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
             if (result is NetworkResult.Success) {
                 val sessions = result.data?.data ?: emptyList()
-                // Look for most recent session that's still active or just completed
-                val recentSession = sessions.firstOrNull { session ->
+
+                // FIXED: Only look for sessions without an end_time (truly active)
+                val activeSession = sessions.firstOrNull { session ->
                     session.endTime == null || session.endTime.isBlank()
                 }
 
-                if (recentSession != null) {
-                    sleepState = sleepState.copy(currentSession = recentSession)
+                android.util.Log.d("SleepTracker", "Active session found: $activeSession")
+
+                if (activeSession != null) {
+                    sleepState = sleepState.copy(currentSession = activeSession)
+                } else {
+                    // No active session - ensure we're in IDLE state
+                    sleepState = sleepState.copy(currentSession = null)
                 }
+
+                android.util.Log.d("SleepTracker", "After check - Button text: ${getButtonText()}")
             }
         }
     }
@@ -294,11 +321,14 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
      * Get button text based on current state
      */
     fun getButtonText(): String {
-        return when (getCurrentState()) {
+        val state = getCurrentState()
+        val text = when (state) {
             SleepSessionState.IDLE -> "Start"
             SleepSessionState.ACTIVE -> "End"
             SleepSessionState.COMPLETED -> "Reset"
         }
+        android.util.Log.d("SleepTracker", "getButtonText: state=$state, text=$text")
+        return text
     }
 
     /**
@@ -354,6 +384,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
             val dateTime = LocalDateTime.parse(isoDateTime, DateTimeFormatter.ISO_DATE_TIME)
             String.format(Locale.getDefault(), "%02d:%02d", dateTime.hour, dateTime.minute)
         } catch (e: Exception) {
+            android.util.Log.e("SleepTracker", "Error formatting time: $isoDateTime", e)
             "--:--"
         }
     }
