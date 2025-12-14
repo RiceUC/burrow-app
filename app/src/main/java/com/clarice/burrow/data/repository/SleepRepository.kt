@@ -3,14 +3,14 @@ package com.clarice.burrow.data.repository
 import com.clarice.burrow.data.remote.*
 import com.clarice.burrow.ui.model.common.ApiResponse
 import com.clarice.burrow.ui.model.sleep.SleepSession
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class SleepRepository(
     private val apiService: ApiService
 ) {
-
-    private val isoFormatter = DateTimeFormatter.ISO_DATE_TIME
 
     /**
      * Start a new sleep session
@@ -18,8 +18,12 @@ class SleepRepository(
     suspend fun startSleepSession(
         startTime: LocalDateTime = LocalDateTime.now()
     ): NetworkResult<ApiResponse<SleepSession>> {
+        // Convert LocalDateTime to ISO 8601 with Z (UTC)
+        val instant = startTime.atZone(ZoneId.systemDefault()).toInstant()
+        val isoString = instant.toString() // This gives "2025-12-14T02:28:48.123Z"
+
         val request = StartSleepRequest(
-            start_time = startTime.format(isoFormatter)
+            start_time = isoString
         )
 
         return safeApiCall { apiService.startSleepSession(request) }
@@ -33,8 +37,12 @@ class SleepRepository(
         endTime: LocalDateTime = LocalDateTime.now(),
         sleepQuality: Int? = null
     ): NetworkResult<ApiResponse<SleepSession>> {
+        // Convert LocalDateTime to ISO 8601 with Z (UTC)
+        val instant = endTime.atZone(ZoneId.systemDefault()).toInstant()
+        val isoString = instant.toString()
+
         val request = EndSleepRequest(
-            end_time = endTime.format(isoFormatter),
+            end_time = isoString,
             sleep_quality = sleepQuality
         )
 

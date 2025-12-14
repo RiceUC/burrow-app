@@ -12,7 +12,7 @@ data class SleepSession(
     @SerialName("start_time")
     val startTime: String,
     @SerialName("end_time")
-    val endTime: String,
+    val endTime: String? = null,
     @SerialName("duration_minutes")
     val durationMinutes: Int? = null,
     @SerialName("sleep_quality")

@@ -30,7 +30,6 @@ import com.clarice.burrow.R
 import com.clarice.burrow.ui.model.sleep.SleepSession
 import com.clarice.burrow.ui.viewmodel.SleepTrackerViewModel
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -44,21 +43,17 @@ fun SleepTrackerView(
     val viewModel = remember { SleepTrackerViewModel(context) }
     val sleepState = viewModel.sleepState
 
-    var startTime by remember { mutableStateOf(LocalTime.of(22, 0)) }
-    var endTime by remember { mutableStateOf<LocalTime?>(null) }
-    var reminderTime by remember { mutableStateOf(LocalTime.of(21, 30)) }
-    var isReminderEnabled by remember { mutableStateOf(true) }
-
     var showSleepQualityDialog by remember { mutableStateOf(false) }
     var showSessionsDialog by remember { mutableStateOf(false) }
 
     val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
 
-    // Show error as Snackbar
-    LaunchedEffect(sleepState.error) {
-        sleepState.error?.let {
-            // Error will be shown in UI
-        }
+    // Debug: Log state changes
+    LaunchedEffect(sleepState.currentSession) {
+        android.util.Log.d("SleepTracker", "Current session changed: ${sleepState.currentSession}")
+        android.util.Log.d("SleepTracker", "Start time display: ${viewModel.getStartTimeDisplay()}")
+        android.util.Log.d("SleepTracker", "End time display: ${viewModel.getEndTimeDisplay()}")
+        android.util.Log.d("SleepTracker", "Button text: ${viewModel.getButtonText()}")
     }
 
     Scaffold(
@@ -163,36 +158,6 @@ fun SleepTrackerView(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Active Session Indicator
-                if (sleepState.activeSession != null) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF6B5FC7)
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "😴 Sleep Session Active",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Started at ${formatTime(sleepState.activeSession.startTime)}",
-                                color = Color.White.copy(alpha = 0.9f),
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
                 // Circular Clock with Bunny
                 Box(
                     modifier = Modifier.size(200.dp),
@@ -263,51 +228,27 @@ fun SleepTrackerView(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Sleep Time Cards (only show if no active session)
-                if (sleepState.activeSession == null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        SleepTimeCard(
-                            modifier = Modifier.weight(1f),
-                            icon = "🛏️",
-                            label = "Start Sleep",
-                            time = startTime.format(timeFormatter),
-                            onClick = {
-                                TimePickerDialog(
-                                    context,
-                                    { _, hour, minute ->
-                                        startTime = LocalTime.of(hour, minute)
-                                    },
-                                    startTime.hour,
-                                    startTime.minute,
-                                    false
-                                ).show()
-                            }
-                        )
+                // Sleep Time Cards
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SleepTimeCard(
+                        modifier = Modifier.weight(1f),
+                        icon = "🛏️",
+                        label = "Start Sleep",
+                        time = viewModel.getStartTimeDisplay()
+                    )
 
-                        SleepTimeCard(
-                            modifier = Modifier.weight(1f),
-                            icon = "🌙",
-                            label = "End Sleep",
-                            time = endTime?.format(timeFormatter) ?: "--:-- AM",
-                            onClick = {
-                                TimePickerDialog(
-                                    context,
-                                    { _, hour, minute ->
-                                        endTime = LocalTime.of(hour, minute)
-                                    },
-                                    6,
-                                    0,
-                                    false
-                                ).show()
-                            }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                    SleepTimeCard(
+                        modifier = Modifier.weight(1f),
+                        icon = "🌙",
+                        label = "End Sleep",
+                        time = viewModel.getEndTimeDisplay()
+                    )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Reminder Time Card
                 Card(
@@ -323,10 +264,12 @@ fun SleepTrackerView(
                                 TimePickerDialog(
                                     context,
                                     { _, hour, minute ->
-                                        reminderTime = LocalTime.of(hour, minute)
+                                        viewModel.setReminderTime(
+                                            java.time.LocalTime.of(hour, minute)
+                                        )
                                     },
-                                    reminderTime.hour,
-                                    reminderTime.minute,
+                                    sleepState.reminderTime.hour,
+                                    sleepState.reminderTime.minute,
                                     false
                                 ).show()
                             },
@@ -339,13 +282,15 @@ fun SleepTrackerView(
                                     .size(32.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (isReminderEnabled) Color(0xFF6B5FC7)
+                                        if (sleepState.isReminderEnabled) Color(0xFF6B5FC7)
                                         else Color.LightGray
                                     )
-                                    .clickable { isReminderEnabled = !isReminderEnabled },
+                                    .clickable {
+                                        viewModel.setReminderEnabled(!sleepState.isReminderEnabled)
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isReminderEnabled) {
+                                if (sleepState.isReminderEnabled) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = "Enabled",
@@ -366,7 +311,7 @@ fun SleepTrackerView(
                         }
 
                         Text(
-                            text = reminderTime.format(timeFormatter),
+                            text = sleepState.reminderTime.format(timeFormatter),
                             fontSize = 15.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.Bold
@@ -376,22 +321,26 @@ fun SleepTrackerView(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Action Button
+                // Action Button (Start / End / Reset)
                 Button(
                     onClick = {
-                        if (sleepState.activeSession != null) {
-                            // End session - show quality dialog
-                            showSleepQualityDialog = true
-                        } else {
-                            // Start session
-                            val now = LocalDateTime.now()
-                            val startDateTime = now
-                                .withHour(startTime.hour)
-                                .withMinute(startTime.minute)
-                                .withSecond(0)
+                        val buttonText = viewModel.getButtonText()
+                        android.util.Log.d("SleepTracker", "Button clicked: $buttonText")
 
-                            viewModel.startSleepSession(startDateTime) {
-                                // Success callback
+                        when (buttonText) {
+                            "Start" -> {
+                                android.util.Log.d("SleepTracker", "Calling startSleepSession")
+                                viewModel.startSleepSession {
+                                    android.util.Log.d("SleepTracker", "Start success callback")
+                                }
+                            }
+                            "End" -> {
+                                android.util.Log.d("SleepTracker", "Showing quality dialog")
+                                showSleepQualityDialog = true
+                            }
+                            "Reset" -> {
+                                android.util.Log.d("SleepTracker", "Calling resetSession")
+                                viewModel.resetSession()
                             }
                         }
                     },
@@ -408,10 +357,10 @@ fun SleepTrackerView(
                             .fillMaxSize()
                             .background(
                                 brush = Brush.horizontalGradient(
-                                    colors = if (sleepState.activeSession != null) {
-                                        listOf(Color(0xFFFF6B6B), Color(0xFFFF8E8E))
-                                    } else {
-                                        listOf(Color(0xFF9BB2FF), Color(0xFFB8C5FF))
+                                    colors = when (viewModel.getButtonText()) {
+                                        "End" -> listOf(Color(0xFFFF6B6B), Color(0xFFFF8E8E))
+                                        "Reset" -> listOf(Color(0xFFFFA500), Color(0xFFFFB84D))
+                                        else -> listOf(Color(0xFF9BB2FF), Color(0xFFB8C5FF))
                                     }
                                 ),
                                 shape = RoundedCornerShape(28.dp)
@@ -425,7 +374,7 @@ fun SleepTrackerView(
                             )
                         } else {
                             Text(
-                                text = if (sleepState.activeSession != null) "End Sleep" else "Start",
+                                text = viewModel.getButtonText(),
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
@@ -461,13 +410,7 @@ fun SleepTrackerView(
             onDismiss = { showSleepQualityDialog = false },
             onConfirm = { quality ->
                 showSleepQualityDialog = false
-                val now = LocalDateTime.now()
-                viewModel.endSleepSession(
-                    sleepQuality = quality,
-                    endTime = now
-                ) {
-                    // Success callback
-                }
+                viewModel.endSleepSession(sleepQuality = quality)
             }
         )
     }
@@ -478,9 +421,7 @@ fun SleepTrackerView(
             sessions = sleepState.sessions,
             onDismiss = { showSessionsDialog = false },
             onDelete = { sessionId ->
-                viewModel.deleteSleepSession(sessionId) {
-                    // Refresh list handled by ViewModel
-                }
+                viewModel.deleteSleepSession(sessionId) {}
             }
         )
     }
@@ -491,11 +432,10 @@ private fun SleepTimeCard(
     icon: String,
     label: String,
     time: String,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp)
     ) {
