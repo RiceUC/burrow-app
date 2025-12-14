@@ -1,22 +1,26 @@
 package com.clarice.burrow.ui.model.sleep
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class SleepSession(
-    @SerialName("session_id")
-    val sessionId: Int,
-    @SerialName("user_id")
+    @SerializedName("session_id")
+    val sessionId: Int = 0,  // Default to 0 to catch issues
+
+    @SerializedName("user_id")
     val userId: Int,
-    @SerialName("start_time")
+
+    @SerializedName("start_time")
     val startTime: String,
-    @SerialName("end_time")
+
+    @SerializedName("end_time")
     val endTime: String? = null,
-    @SerialName("duration_minutes")
+
+    @SerializedName("duration_minutes")
     val durationMinutes: Int? = null,
-    @SerialName("sleep_quality")
+
+    @SerializedName("sleep_quality")
     val sleepQuality: Int? = null,
-    @SerialName("created_at")
+
+    @SerializedName("created_at")
     val createdAt: String
 )

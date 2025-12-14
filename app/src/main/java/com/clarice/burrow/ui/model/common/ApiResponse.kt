@@ -1,14 +1,16 @@
 package com.clarice.burrow.ui.model.common
 
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class ApiResponse<T>(
+    @SerializedName("data")
     val data: T? = null,
+
+    @SerializedName("message")
     val message: String? = null
 )
 
-@Serializable
 data class ErrorResponse(
+    @SerializedName("errors")
     val errors: String
 )

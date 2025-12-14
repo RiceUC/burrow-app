@@ -16,6 +16,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.time.Instant // to parse UTC time
+import java.time.ZoneId // to convert to local timezone
 
 /**
  * Sleep Session States
@@ -103,7 +105,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
     }
 
     // ==================== END SLEEP SESSION ====================
-
     /**
      * End the active sleep session
      */
@@ -113,6 +114,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
     ) {
         val currentState = getCurrentState()
         android.util.Log.d("SleepTracker", "endSleepSession called, current state: $currentState")
+        android.util.Log.d("SleepTracker", "Current session: ${sleepState.currentSession}")
 
         if (currentState != SleepSessionState.ACTIVE) {
             sleepState = sleepState.copy(error = "Cannot end: no active session")
@@ -120,8 +122,11 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
 
         val sessionId = sleepState.currentSession?.sessionId
-        if (sessionId == null) {
-            sleepState = sleepState.copy(error = "No active session to end")
+        android.util.Log.d("SleepTracker", "Session ID to end: $sessionId")
+
+        if (sessionId == null || sessionId == 0) {
+            sleepState = sleepState.copy(error = "Invalid session ID")
+            android.util.Log.e("SleepTracker", "Invalid session ID: $sessionId")
             return
         }
 
@@ -378,11 +383,17 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     /**
      * Format time helper
+     * FIXED: Convert UTC time from backend to local timezone
      */
     private fun formatTime(isoDateTime: String): String {
         return try {
-            val dateTime = LocalDateTime.parse(isoDateTime, DateTimeFormatter.ISO_DATE_TIME)
-            String.format(Locale.getDefault(), "%02d:%02d", dateTime.hour, dateTime.minute)
+            // Parse as Instant (UTC time from backend)
+            val instant = Instant.parse(isoDateTime)
+
+            // Convert to local timezone
+            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+            String.format(Locale.getDefault(), "%02d:%02d", localDateTime.hour, localDateTime.minute)
         } catch (e: Exception) {
             android.util.Log.e("SleepTracker", "Error formatting time: $isoDateTime", e)
             "--:--"
