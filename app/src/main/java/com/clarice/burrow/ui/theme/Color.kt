@@ -1,4 +1,4 @@
-package com.clarice.burrow.ui.theme
+package com.kiara.journal.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
