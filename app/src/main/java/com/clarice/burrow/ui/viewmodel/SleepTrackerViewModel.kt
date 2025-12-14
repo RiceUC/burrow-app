@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.clarice.burrow.data.remote.NetworkResult
 import com.clarice.burrow.data.remote.RetrofitClient
 import com.clarice.burrow.data.repository.SleepRepository
+import com.clarice.burrow.data.repository.UserRepository
 import com.clarice.burrow.ui.model.sleep.SleepSession
 import com.clarice.burrow.utils.ReminderScheduler
 import kotlinx.coroutines.launch
@@ -16,25 +17,20 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import java.time.Instant // to parse UTC time
-import java.time.ZoneId // to convert to local timezone
+import java.time.Instant
+import java.time.ZoneId
 
-/**
- * Sleep Session States
- */
 enum class SleepSessionState {
-    IDLE,       // No session - can start
-    ACTIVE,     // Session started - can end
-    COMPLETED   // Session ended - can reset
+    IDLE,
+    ACTIVE,
+    COMPLETED
 }
 
-/**
- * SleepTrackerViewModel - Handles sleep tracking operations with state management
- */
 class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     private val apiService = RetrofitClient.getApiService(context)
     private val sleepRepository = SleepRepository(apiService)
+    private val userRepository = UserRepository(apiService)
     private val reminderScheduler = ReminderScheduler(context)
 
     var sleepState by mutableStateOf(SleepTrackerState())
@@ -43,13 +39,53 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
     init {
         loadSleepSessions()
         checkActiveSession()
+        loadUserReminderSettings()
+    }
+
+    // ==================== LOAD USER REMINDER SETTINGS ====================
+
+    /**
+     * Load reminder settings from backend
+     */
+    private fun loadUserReminderSettings() {
+        viewModelScope.launch {
+            val result = userRepository.getProfile()
+
+            when (result) {
+                is NetworkResult.Success -> {
+                    val user = result.data?.data
+                    user?.reminderTime?.let { timeString ->
+                        // Parse reminder time from backend (format: "HH:mm")
+                        try {
+                            val parts = timeString.split(":")
+                            if (parts.size == 2) {
+                                val hour = parts[0].toInt()
+                                val minute = parts[1].toInt()
+                                val reminderTime = LocalTime.of(hour, minute)
+
+                                sleepState = sleepState.copy(
+                                    reminderTime = reminderTime,
+                                    isReminderEnabled = true
+                                )
+
+                                // Schedule the reminder
+                                scheduleReminder(reminderTime)
+                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("SleepTracker", "Error parsing reminder time: ${e.message}")
+                        }
+                    }
+                }
+                is NetworkResult.Error -> {
+                    android.util.Log.e("SleepTracker", "Failed to load user settings: ${result.message}")
+                }
+                is NetworkResult.Loading -> {}
+            }
+        }
     }
 
     // ==================== STATE MANAGEMENT ====================
 
-    /**
-     * Get current session state
-     */
     private fun getCurrentState(): SleepSessionState {
         val session = sleepState.currentSession
         return when {
@@ -61,9 +97,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     // ==================== START SLEEP SESSION ====================
 
-    /**
-     * Start a new sleep session
-     */
     fun startSleepSession(onSuccess: () -> Unit = {}) {
         val currentState = getCurrentState()
         android.util.Log.d("SleepTracker", "startSleepSession called, current state: $currentState")
@@ -105,13 +138,8 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
     }
 
     // ==================== END SLEEP SESSION ====================
-    /**
-     * End the active sleep session
-     */
-    fun endSleepSession(
-        sleepQuality: Int? = null,
-        onSuccess: () -> Unit = {}
-    ) {
+
+    fun endSleepSession(sleepQuality: Int? = null, onSuccess: () -> Unit = {}) {
         val currentState = getCurrentState()
         android.util.Log.d("SleepTracker", "endSleepSession called, current state: $currentState")
         android.util.Log.d("SleepTracker", "Current session: ${sleepState.currentSession}")
@@ -149,7 +177,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
                         currentSession = completedSession,
                         error = null
                     )
-                    // Reload sessions to update history
                     loadSleepSessions()
                     onSuccess()
                 }
@@ -169,9 +196,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     // ==================== RESET SESSION ====================
 
-    /**
-     * Reset/clear the completed session and return to IDLE state
-     */
     fun resetSession() {
         val currentState = getCurrentState()
         android.util.Log.d("SleepTracker", "resetSession called, current state: $currentState")
@@ -191,9 +215,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     // ==================== LOAD SLEEP SESSIONS ====================
 
-    /**
-     * Load all sleep sessions
-     */
     fun loadSleepSessions() {
         sleepState = sleepState.copy(isLoading = true, error = null)
 
@@ -224,20 +245,16 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     // ==================== DELETE SESSION ====================
 
-    /**
-     * Delete a sleep session
-     */
     fun deleteSleepSession(sessionId: Int, onSuccess: () -> Unit) {
         viewModelScope.launch {
             val result = sleepRepository.deleteSleepSession(sessionId)
 
             when (result) {
                 is NetworkResult.Success -> {
-                    // If we deleted the current session, clear it
                     if (sleepState.currentSession?.sessionId == sessionId) {
                         sleepState = sleepState.copy(currentSession = null)
                     }
-                    loadSleepSessions() // Refresh the list
+                    loadSleepSessions()
                     onSuccess()
                 }
                 is NetworkResult.Error -> {
@@ -252,50 +269,65 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
 
     // ==================== REMINDER MANAGEMENT ====================
 
-    /**
-     * Update reminder enabled state
-     */
     fun setReminderEnabled(enabled: Boolean) {
         sleepState = sleepState.copy(isReminderEnabled = enabled)
 
         if (enabled) {
             scheduleReminder(sleepState.reminderTime)
+            // Save to backend
+            updateReminderTimeOnBackend(sleepState.reminderTime)
         } else {
             cancelReminder()
         }
     }
 
-    /**
-     * Update reminder time
-     */
     fun setReminderTime(time: LocalTime) {
         sleepState = sleepState.copy(reminderTime = time)
 
         if (sleepState.isReminderEnabled) {
             scheduleReminder(time)
+            // Save to backend
+            updateReminderTimeOnBackend(time)
         }
     }
 
-    /**
-     * Schedule reminder notification
-     */
     private fun scheduleReminder(time: LocalTime) {
         reminderScheduler.scheduleReminder(time)
     }
 
-    /**
-     * Cancel reminder notification
-     */
     private fun cancelReminder() {
         reminderScheduler.cancelReminder()
     }
 
+    /**
+     * Update reminder time on backend
+     */
+    private fun updateReminderTimeOnBackend(time: LocalTime) {
+        viewModelScope.launch {
+            val timeString = String.format(Locale.getDefault(), "%02d:%02d", time.hour, time.minute)
+
+            val result = userRepository.updateProfile(
+                name = null,
+                birthdate = null,
+                defaultSoundDuration = null,
+                reminderTime = timeString,
+                gender = null
+            )
+
+            when (result) {
+                is NetworkResult.Success -> {
+                    android.util.Log.d("SleepTracker", "Reminder time updated on backend: $timeString")
+                }
+                is NetworkResult.Error -> {
+                    android.util.Log.e("SleepTracker", "Failed to update reminder time: ${result.message}")
+                }
+                is NetworkResult.Loading -> {}
+            }
+        }
+    }
+
     // ==================== HELPERS ====================
 
-    /**
-     * Check if there's an active or completed session
-     * THIS IS THE KEY FIX - Only set currentSession if it's truly ACTIVE (no end_time)
-     */
     private fun checkActiveSession() {
         viewModelScope.launch {
             val result = sleepRepository.getAllSleepSessions()
@@ -303,7 +335,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
             if (result is NetworkResult.Success) {
                 val sessions = result.data?.data ?: emptyList()
 
-                // FIXED: Only look for sessions without an end_time (truly active)
                 val activeSession = sessions.firstOrNull { session ->
                     session.endTime == null || session.endTime.isBlank()
                 }
@@ -313,7 +344,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
                 if (activeSession != null) {
                     sleepState = sleepState.copy(currentSession = activeSession)
                 } else {
-                    // No active session - ensure we're in IDLE state
                     sleepState = sleepState.copy(currentSession = null)
                 }
 
@@ -322,9 +352,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    /**
-     * Get button text based on current state
-     */
     fun getButtonText(): String {
         val state = getCurrentState()
         val text = when (state) {
@@ -336,9 +363,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         return text
     }
 
-    /**
-     * Get start time display
-     */
     fun getStartTimeDisplay(): String {
         val startTime = sleepState.currentSession?.startTime
         return if (startTime != null && startTime.isNotBlank()) {
@@ -348,9 +372,6 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    /**
-     * Get end time display
-     */
     fun getEndTimeDisplay(): String {
         val endTime = sleepState.currentSession?.endTime
         return if (endTime != null && endTime.isNotBlank()) {
@@ -360,39 +381,22 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    /**
-     * Clear error message
-     */
     fun clearError() {
         sleepState = sleepState.copy(error = null)
     }
 
-    /**
-     * Format duration - delegate to repository
-     */
     fun formatDuration(minutes: Int?): String {
         return sleepRepository.formatDuration(minutes)
     }
 
-    /**
-     * Get quality emoji - delegate to repository
-     */
     fun getQualityEmoji(quality: Int?): String {
         return sleepRepository.getQualityEmoji(quality)
     }
 
-    /**
-     * Format time helper
-     * FIXED: Convert UTC time from backend to local timezone
-     */
     private fun formatTime(isoDateTime: String): String {
         return try {
-            // Parse as Instant (UTC time from backend)
             val instant = Instant.parse(isoDateTime)
-
-            // Convert to local timezone
             val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-
             String.format(Locale.getDefault(), "%02d:%02d", localDateTime.hour, localDateTime.minute)
         } catch (e: Exception) {
             android.util.Log.e("SleepTracker", "Error formatting time: $isoDateTime", e)
@@ -401,14 +405,11 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
     }
 }
 
-/**
- * Sleep Tracker UI State
- */
 data class SleepTrackerState(
     val sessions: List<SleepSession> = emptyList(),
     val currentSession: SleepSession? = null,
     val reminderTime: LocalTime = LocalTime.of(21, 30),
-    val isReminderEnabled: Boolean = true,
+    val isReminderEnabled: Boolean = false,
     val isLoading: Boolean = false,
     val isStarting: Boolean = false,
     val isEnding: Boolean = false,

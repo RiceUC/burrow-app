@@ -26,6 +26,9 @@ class ReminderScheduler(private val context: Context) {
         private const val CHANNEL_NAME = "Sleep Reminders"
         private const val NOTIFICATION_ID = 1001
         private const val REQUEST_CODE = 1001
+        private const val PREFS_NAME = "burrow_reminder_prefs"
+        private const val KEY_REMINDER_HOUR = "reminder_hour"
+        private const val KEY_REMINDER_MINUTE = "reminder_minute"
     }
 
     init {
@@ -36,6 +39,9 @@ class ReminderScheduler(private val context: Context) {
      * Schedule a reminder at the specified time
      */
     fun scheduleReminder(time: LocalTime) {
+        // Save the reminder time to preferences
+        saveReminderTime(time)
+
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, ReminderReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
@@ -59,19 +65,28 @@ class ReminderScheduler(private val context: Context) {
             .toInstant()
             .toEpochMilli()
 
-        // Schedule alarm
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAtMillis,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                triggerAtMillis,
-                pendingIntent
-            )
+        android.util.Log.d("ReminderScheduler", "Scheduling reminder for: $reminderTime")
+
+        // Schedule repeating alarm
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // For Android 6.0+, use setExactAndAllowWhileIdle for one-time alarm
+                // We'll reschedule in the receiver for daily repeat
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAtMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAtMillis,
+                    pendingIntent
+                )
+            }
+            android.util.Log.d("ReminderScheduler", "Reminder scheduled successfully")
+        } catch (e: SecurityException) {
+            android.util.Log.e("ReminderScheduler", "Failed to schedule alarm: ${e.message}")
         }
     }
 
@@ -90,6 +105,8 @@ class ReminderScheduler(private val context: Context) {
 
         alarmManager.cancel(pendingIntent)
         pendingIntent.cancel()
+
+        android.util.Log.d("ReminderScheduler", "Reminder cancelled")
     }
 
     /**
@@ -104,10 +121,38 @@ class ReminderScheduler(private val context: Context) {
             ).apply {
                 description = "Notifications for sleep reminders"
                 enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
             }
 
             val notificationManager = context.getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    /**
+     * Save reminder time to shared preferences
+     */
+    private fun saveReminderTime(time: LocalTime) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putInt(KEY_REMINDER_HOUR, time.hour)
+            putInt(KEY_REMINDER_MINUTE, time.minute)
+            apply()
+        }
+    }
+
+    /**
+     * Load reminder time from shared preferences
+     */
+    fun loadReminderTime(): LocalTime? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val hour = prefs.getInt(KEY_REMINDER_HOUR, -1)
+        val minute = prefs.getInt(KEY_REMINDER_MINUTE, -1)
+
+        return if (hour != -1 && minute != -1) {
+            LocalTime.of(hour, minute)
+        } else {
+            null
         }
     }
 }
@@ -118,29 +163,46 @@ class ReminderScheduler(private val context: Context) {
 class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        android.util.Log.d("ReminderReceiver", "Reminder alarm fired")
+
         showNotification(context)
 
         // Reschedule for next day
         val reminderScheduler = ReminderScheduler(context)
-        val currentTime = LocalTime.now()
-        reminderScheduler.scheduleReminder(currentTime)
+        val savedTime = reminderScheduler.loadReminderTime()
+
+        if (savedTime != null) {
+            reminderScheduler.scheduleReminder(savedTime)
+            android.util.Log.d("ReminderReceiver", "Rescheduled reminder for tomorrow at $savedTime")
+        }
     }
 
     private fun showNotification(context: Context) {
         val notification = NotificationCompat.Builder(context, "sleep_reminder_channel")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Time to Sleep")
+            .setContentTitle("Time to Sleep 🌙")
             .setContentText("Time to go to sleep, dear! 😴")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setVibrate(longArrayOf(0, 500, 200, 500))
             .build()
 
-        val notificationManager = NotificationManagerCompat.from(context)
         try {
-            notificationManager.notify(1001, notification)
+            val notificationManager = NotificationManagerCompat.from(context)
+
+            // Check for notification permission (Android 13+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    notificationManager.notify(1001, notification)
+                    android.util.Log.d("ReminderReceiver", "Notification sent")
+                }
+            } else {
+                notificationManager.notify(1001, notification)
+                android.util.Log.d("ReminderReceiver", "Notification sent")
+            }
         } catch (e: SecurityException) {
-            // Handle permission not granted
+            android.util.Log.e("ReminderReceiver", "Failed to show notification: ${e.message}")
         }
     }
 }
