@@ -1,5 +1,6 @@
 package com.kiara.journal.ui.journal
 
+import android.inputmethodservice.Keyboard
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.kiara.journal.R
+import com.clarice.burrow.R
 import com.kiara.journal.data.model.Journal
 import com.kiara.journal.data.model.MoodType
 import androidx.compose.ui.text.font.FontWeight
@@ -256,7 +257,7 @@ fun BottomBarItem(
 @Composable
 fun JournalCard(journal: Journal, onClick: () -> Unit) {
 
-    Row(
+    Keyboard.Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(92.dp)

@@ -68,4 +68,55 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-}
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+
+
+
+    // VIEWMODEL + LIVEDATA
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
+    implementation("androidx.compose.runtime:runtime-livedata")
+
+    // COIL (LOAD IMAGE)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // SWIPE TO DELETE
+    implementation("androidx.compose.material:material:1.6.8")
+    implementation("androidx.compose.foundation:foundation:1.6.8")
+
+    // RETROFIT + OKHTTP (UNTUK API CALLS)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+    // COROUTINES (untuk async operations)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+
+    // DEBUGGING
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // TEST
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // Material rounded icons
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+
+    // Navigation compose (versi stabil)
+        implementation("androidx.navigation:navigation-compose:2.8.2")
+
+    // LiveData runtime for Compose
+        implementation("androidx.compose.runtime:runtime-livedata")
+
+    // material (for SwipeToDismiss) and foundation
+        implementation("androidx.compose.material:material:1.6.8")
+        implementation("androidx.compose.foundation:foundation:1.6.8")
+    }

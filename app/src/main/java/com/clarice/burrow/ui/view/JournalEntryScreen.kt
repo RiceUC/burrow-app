@@ -20,7 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kiara.journal.R
+import com.clarice.burrow.R
 import com.kiara.journal.data.model.MoodType
 import android.util.Log
 import com.kiara.journal.viewmodel.JournalViewModel
