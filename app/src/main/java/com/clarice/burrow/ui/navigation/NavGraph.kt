@@ -19,6 +19,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.clarice.burrow.ui.viewmodel.JournalViewModel
+import com.kiara.journal.ui.journal.JournalEntryScreen
+import com.kiara.journal.ui.journal.JournalListScreen
+
 
 @Composable
 fun NavGraph(
@@ -26,6 +31,8 @@ fun NavGraph(
     authViewModel: AuthViewModel
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val journalViewModel: JournalViewModel = viewModel()
+    val userId by authViewModel.userId.collectAsState()
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"
@@ -128,35 +135,33 @@ fun NavGraph(
 
         // Journal List Screen
         composable("journal_list") {
-            PlaceholderScreen(
-                title = "Journal",
-                currentRoute = "journal_list",
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo("sleep_tracker") {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+            JournalListScreen(
+                viewModel = journalViewModel,
+                userId = userId,
+                onAdd = {
+                    navController.navigate("journal_entry")
+                },
+                onOpen = { id: Int ->
+                    navController.navigate("journal_entry/$id")
                 }
             )
         }
 
+
+
+
         // Journal Entry Screen (with ID parameter)
-        composable(
-            route = "journal_entry/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val journalId = backStackEntry.arguments?.getInt("id") ?: 0
-            PlaceholderScreen(
-                title = "Journal Entry #$journalId",
-                currentRoute = "journal_entry",
-                onNavigate = { route ->
-                    navController.navigate(route)
-                }
+        composable("journal_entry") {
+            JournalEntryScreen(
+                viewModel = journalViewModel,
+                userId = userId,
+                journalId = null,
+                onBack = { navController.navigateUp() },
+                onSaved = { navController.navigateUp() }
             )
         }
+
+
 
         // Music List Screen
         composable("music_list") {

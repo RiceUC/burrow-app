@@ -25,16 +25,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.kiara.journal.R
-import com.kiara.journal.data.model.Journal
-import com.kiara.journal.data.model.MoodType
+import com.clarice.burrow.R
+import com.clarice.burrow.ui.model.journal.Journal
+import com.clarice.burrow.ui.model.journal.MoodType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.kiara.journal.ui.components.noRippleClickable
+import com.clarice.burrow.ui.view.noRippleClickable
 import androidx.compose.ui.text.style.TextOverflow
 import android.util.Log
-import com.kiara.journal.viewmodel.JournalUiState
-import com.kiara.journal.viewmodel.JournalViewModel
+import com.clarice.burrow.ui.viewmodel.JournalUiState
+import com.clarice.burrow.ui.viewmodel.JournalViewModel
 import java.time.format.DateTimeFormatter
 import java.time.ZonedDateTime
 fun formatDateFromIso(isoDateString: String): String {
@@ -270,7 +270,7 @@ fun JournalCard(journal: Journal, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
 
             Text(
-                text = formatDateFromIso(journal.date),  // 🆕 USE: Format date!
+                text = formatDateFromIso(journal.date),
                 fontSize = 18.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold

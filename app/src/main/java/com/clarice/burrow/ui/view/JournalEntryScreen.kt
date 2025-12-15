@@ -20,10 +20,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kiara.journal.R
-import com.kiara.journal.data.model.MoodType
+import com.clarice.burrow.R
+import com.clarice.burrow.ui.model.journal.MoodType
 import android.util.Log
-import com.kiara.journal.viewmodel.JournalViewModel
+import com.clarice.burrow.ui.viewmodel.JournalViewModel
 import kotlin.text.isEmpty
 import kotlin.text.isNotEmpty
 
@@ -40,6 +40,8 @@ fun JournalEntryScreen(
 
     val isEditMode = journalId != null
     val currentJournal by viewModel.currentJournal.collectAsState()
+    val journal by viewModel.currentJournal.collectAsState()
+
 
     // LaunchedEffect untuk load & untuk observe data
     LaunchedEffect(journalId) {
