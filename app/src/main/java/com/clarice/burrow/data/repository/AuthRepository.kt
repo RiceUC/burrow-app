@@ -42,14 +42,35 @@ class AuthRepository(
         val request = LoginRequest(username, password)
         val result = safeApiCall { apiService.login(request) }
 
-        // Save token if successful
+        // Save tokens if successful
         if (result is NetworkResult.Success) {
             result.data?.let { authResponse ->
-                tokenManager.saveToken(authResponse.token)
+                tokenManager.saveTokens(authResponse.accessToken, authResponse.refreshToken)
                 tokenManager.saveUserInfo(
                     userId = authResponse.user.userId,
                     username = authResponse.user.username
                 )
+            }
+        }
+
+        return result
+    }
+
+    // Refresh access token
+    suspend fun refreshAccessToken(): NetworkResult<RefreshTokenResponse> {
+        val refreshToken = tokenManager.getRefreshTokenDirect()
+        
+        if (refreshToken == null) {
+            return NetworkResult.Error("No refresh token available")
+        }
+
+        val request = RefreshTokenRequest(refreshToken)
+        val result = safeApiCall { apiService.refreshToken(request) }
+
+        // Update access token if successful
+        if (result is NetworkResult.Success) {
+            result.data?.let { response ->
+                tokenManager.updateAccessToken(response.accessToken)
             }
         }
 

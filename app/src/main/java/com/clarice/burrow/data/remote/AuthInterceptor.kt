@@ -1,7 +1,6 @@
 package com.clarice.burrow.data.remote
 
 import com.clarice.burrow.data.local.TokenManager
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -15,20 +14,20 @@ class AuthInterceptor(private val tokenManager: TokenManager) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        // Skip token injection for login/register endpoints
+        // Skip token injection for public endpoints
         val url = originalRequest.url.encodedPath
-        if (url.contains("/login") || url.contains("/register")) {
+        if (url.contains("/login") || url.contains("/register") || url.contains("/refresh-token")) {
             return chain.proceed(originalRequest)
         }
 
-        // Get token and add to header
-        val token = runBlocking {
-            tokenManager.getToken().first()
+        // Get access token and add to header
+        val accessToken = runBlocking {
+            tokenManager.getAccessTokenDirect()
         }
 
-        val newRequest = if (token != null) {
+        val newRequest = if (accessToken != null) {
             originalRequest.newBuilder()
-                .header("Authorization", "Bearer $token")
+                .header("Authorization", "Bearer $accessToken")
                 .build()
         } else {
             originalRequest

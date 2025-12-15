@@ -1,4 +1,4 @@
-package com.kiara.journal.ui.journal
+package com.clarice.burrow.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,21 +7,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.NightlightRound
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -30,25 +39,27 @@ import com.clarice.burrow.ui.model.journal.Journal
 import com.clarice.burrow.ui.model.journal.MoodType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.clarice.burrow.ui.view.noRippleClickable
 import androidx.compose.ui.text.style.TextOverflow
-import android.util.Log
-import com.clarice.burrow.ui.viewmodel.JournalUiState
 import com.clarice.burrow.ui.viewmodel.JournalViewModel
 import java.time.format.DateTimeFormatter
 import java.time.ZonedDateTime
+
 fun formatDateFromIso(isoDateString: String): String {
     return try {
         val zonedDateTime = ZonedDateTime.parse(isoDateString)
         val localDate = zonedDateTime.toLocalDate()
-
-        val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")  // "13 Dec 2025"
+        val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
         localDate.format(formatter)
-    } catch (e: Exception) {
-        Log.e("DateFormat", "Failed to parse date: $isoDateString, error: ${e.message}")
-        isoDateString.substringBefore("T")  // Return "2025-12-13"
+    } catch (_: Exception) {
+        isoDateString.substringBefore("T")
     }
 }
+
+fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = this.then(
+    Modifier.pointerInput(Unit) {
+        detectTapGestures(onTap = { onClick() })
+    }
+)
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -58,24 +69,48 @@ fun JournalListScreen(
     onAdd: () -> Unit,
     onOpen: (Int) -> Unit
 ) {
+    // Debug: Log fetch action BEFORE calling API
     LaunchedEffect(userId) {
-        Log.d("JournalListScreen", "userId=$userId")
+        try {
+            android.util.Log.d("JournalListScreen", "Fetching journals for userId: $userId")
+            viewModel.fetchJournals(userId)
+        } catch (e: Exception) {
+            android.util.Log.e("JournalListScreen", "Error fetching journals: ${e.message}", e)
+        }
     }
 
-    val uiState by viewModel.uiState.collectAsState()
-
-    val journals = when (val state = uiState) {
-        is JournalUiState.Success -> state.journals
-        else -> emptyList()
+    val journals by viewModel.journals.collectAsState(initial = emptyList())
+    
+    // Debug log on data update
+    LaunchedEffect(journals) {
+        android.util.Log.d("JournalListScreen", "Journals updated: ${journals.size} items")
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1E1B4B)) // Fallback background jika image fail
+    ) {
 
         Image(
             painter = painterResource(id = R.drawable.journallistviewbg),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
+        )
+
+        // Gradient overlay untuk contrast
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF1E1B4B).copy(alpha = 0.4f),
+                            Color(0xFF1E1B4B).copy(alpha = 0.7f)
+                        )
+                    )
+                )
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -112,11 +147,43 @@ fun JournalListScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 contentPadding = PaddingValues(bottom = 140.dp, top = 10.dp)
             ) {
-                items(items = journals, key = { it.id }) { j ->
+                if (journals.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "📝",
+                                    fontSize = 48.sp
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    "No journals yet",
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Click + to create your first entry!",
+                                    color = Color(0xFFBFC7FF),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(items = journals, key = { it.journal_id }) { journal ->
 
                     val dismissState = rememberDismissState(confirmStateChange = { dismissValue ->
                         if (dismissValue == DismissValue.DismissedToStart) {
-                            viewModel.deleteJournal(j.id, userId)
+                            viewModel.deleteJournal(journal.journal_id, userId)
                         }
                         true
                     })
@@ -140,16 +207,17 @@ fun JournalListScreen(
                             }
                         },
                         dismissContent = {
-                            JournalCard(j, onClick = { onOpen(j.id) })
+                            JournalCard(journal, onClick = { onOpen(journal.journal_id) })
                         }
                     )
+                    }
                 }
             }
         }
 
         FloatingActionButton(
             onClick = onAdd,
-            backgroundColor = Color.White,
+            containerColor = Color.White,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 26.dp, bottom = 40.dp)
@@ -194,7 +262,7 @@ fun BottomBar(
             BottomBarItem(
                 title = "Journal",
                 selected = selectedTab == 1,
-                icon = Icons.Filled.LibraryBooks,
+                icon = Icons.AutoMirrored.Filled.LibraryBooks,
                 onClick = { onTabSelected(1) }
             )
 
@@ -270,7 +338,7 @@ fun JournalCard(journal: Journal, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
 
             Text(
-                text = formatDateFromIso(journal.date),
+                text = formatDateFromIso(journal.created_at),
                 fontSize = 18.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -289,7 +357,7 @@ fun JournalCard(journal: Journal, onClick: () -> Unit) {
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        val moodRes = when (journal.mood) {
+        val moodRes = when (journal.mood.uppercase()) {
             MoodType.HAPPY.name -> R.drawable.smiling
             MoodType.SAD.name -> R.drawable.crying
             MoodType.TIRED.name -> R.drawable.tired

@@ -2,126 +2,145 @@ package com.clarice.burrow.ui.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.clarice.burrow.data.remote.JournalRepository
 import com.clarice.burrow.ui.model.journal.Journal
 import com.clarice.burrow.ui.model.journal.JournalRequest
+import com.clarice.burrow.ui.model.journal.JournalUpdateRequest
 import com.clarice.burrow.ui.model.journal.MoodType
+import com.clarice.burrow.data.remote.JournalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
-// ================= UI STATE =================
-
-sealed interface JournalUiState {
-    object Idle : JournalUiState
-    object Loading : JournalUiState
-    data class Success(val journals: List<Journal>) : JournalUiState
-    data class Error(val message: String) : JournalUiState
-}
-
-// ================= VIEWMODEL =================
+// ================= VIEW MODEL =================
 
 class JournalViewModel(
-    private val journalRepository: JournalRepository = JournalRepository()
+    private val journalRepository: JournalRepository
 ) : ViewModel() {
 
-    // 🔹 List state
-    private val _uiState = MutableStateFlow<JournalUiState>(JournalUiState.Idle)
-    val uiState: StateFlow<JournalUiState> = _uiState.asStateFlow()
+    // 🔹 Journals list
+    private val _journals = MutableStateFlow<List<Journal>>(emptyList())
+    val journals: StateFlow<List<Journal>> = _journals.asStateFlow()
 
-    // 🔹 Single journal state (edit/detail)
+    // 🔹 Single journal (edit / detail)
     private val _currentJournal = MutableStateFlow<Journal?>(null)
     val currentJournal: StateFlow<Journal?> = _currentJournal.asStateFlow()
 
+    // 🔹 Loading state for save/update operations
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
+
     // ================= ACTIONS =================
 
-    fun fetchJournals(userId: Int) = viewModelScope.launch {
-        _uiState.value = JournalUiState.Loading
-
-        journalRepository.getJournals(userId)
-            .onSuccess { response ->
-                _uiState.value =
-                    JournalUiState.Success(response.data.orEmpty())
-            }
-            .onFailure { e ->
-                _uiState.value =
-                    JournalUiState.Error(e.message ?: "Failed to load journals")
-            }
+    fun fetchJournals(userId: Int) {
+        viewModelScope.launch {
+            journalRepository.getJournals(userId)
+                .onSuccess { journals ->
+                    _journals.value = journals
+                }
+                .onFailure { e ->
+                    Log.e("JournalVM", "Fetch failed: ${e.message}")
+                }
+        }
     }
 
-    fun loadJournal(journalId: Int) = viewModelScope.launch {
+    fun loadJournal(journalId: Int) {
         _currentJournal.value = null
 
-        journalRepository.getJournal(journalId)
-            .onSuccess { journal ->
-                _currentJournal.value = journal
-            }
-            .onFailure { e ->
-                Log.e("JournalVM", "Load failed: ${e.message}")
-                _currentJournal.value = null
-            }
+        viewModelScope.launch {
+            journalRepository.getJournal(journalId)
+                .onSuccess { journal ->
+                    _currentJournal.value = journal
+                }
+                .onFailure { e ->
+                    Log.e("JournalVM", "Load failed: ${e.message}")
+                }
+        }
     }
 
     fun addJournal(
         userId: Int,
         content: String,
-        mood: MoodType
-    ) = viewModelScope.launch {
+        mood: MoodType,
+        onComplete: () -> Unit = {}
+    ) {
+        _isSaving.value = true
+        viewModelScope.launch {
+            val request = JournalRequest(
+                user_id = userId,
+                content = content,
+                mood = mood.name.lowercase()
+            )
 
-        val request = JournalRequest(
-            userId = userId,
-            content = content,
-            mood = mood.name,
-            date = LocalDate.now().toString()
-        )
-
-        journalRepository.createJournal(request)
-            .onSuccess {
-                fetchJournals(userId)
-            }
-            .onFailure { e ->
-                _uiState.value =
-                    JournalUiState.Error(e.message ?: "Failed to save journal")
-            }
+            journalRepository.createJournal(request)
+                .onSuccess {
+                    android.util.Log.d("JournalVM", "Journal created successfully")
+                    fetchJournals(userId)
+                    _isSaving.value = false
+                    onComplete()
+                }
+                .onFailure { e ->
+                    android.util.Log.e("JournalVM", "Add failed: ${e.message}")
+                    _isSaving.value = false
+                }
+        }
     }
 
     fun updateJournal(
         journalId: Int,
         userId: Int,
         content: String,
-        mood: MoodType
-    ) = viewModelScope.launch {
-
-        val request = JournalRequest(
-            userId = userId,
-            content = content,
-            mood = mood.name,
-            date = LocalDate.now().toString()
-        )
-
-        journalRepository.updateJournal(journalId, request)
-            .onSuccess {
-                fetchJournals(userId)
-            }
-            .onFailure { e ->
-                _uiState.value =
-                    JournalUiState.Error(e.message ?: "Failed to update journal")
-            }
-    }
-
-    fun deleteJournal(journalId: Int, userId: Int) =
+        mood: MoodType,
+        onComplete: () -> Unit = {}
+    ) {
+        _isSaving.value = true
         viewModelScope.launch {
+            val request = JournalUpdateRequest(
+                content = content,
+                mood = mood.name.lowercase()
+            )
 
-            journalRepository.deleteJournal(journalId)
+            journalRepository.updateJournal(journalId, request)
                 .onSuccess {
+                    android.util.Log.d("JournalVM", "Journal updated successfully")
                     fetchJournals(userId)
+                    _isSaving.value = false
+                    onComplete()
                 }
                 .onFailure { e ->
-                    _uiState.value =
-                        JournalUiState.Error(e.message ?: "Failed to delete journal")
+                    android.util.Log.e("JournalVM", "Update failed: ${e.message}")
+                    _isSaving.value = false
                 }
         }
+    }
+
+    fun deleteJournal(journalId: Int, userId: Int) {
+        // Optimistic delete - remove from UI immediately
+        _journals.value = _journals.value.filter { it.journal_id != journalId }
+        
+        viewModelScope.launch {
+            journalRepository.deleteJournal(journalId)
+                .onSuccess {
+                    android.util.Log.d("JournalVM", "Journal deleted successfully")
+                }
+                .onFailure { e ->
+                    android.util.Log.e("JournalVM", "Delete failed: ${e.message}")
+                    // If delete fails, reload list to restore item
+                    fetchJournals(userId)
+                }
+        }
+    }
+
+    companion object {
+        fun Factory(repository: JournalRepository): ViewModelProvider.Factory {
+            return object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return JournalViewModel(repository) as T
+                }
+            }
+        }
+    }
 }

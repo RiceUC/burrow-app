@@ -21,18 +21,88 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clarice.burrow.ui.viewmodel.JournalViewModel
-import com.kiara.journal.ui.journal.JournalEntryScreen
-import com.kiara.journal.ui.journal.JournalListScreen
+import com.clarice.burrow.ui.view.JournalEntryScreen
+import com.clarice.burrow.ui.view.JournalListScreen
+import com.clarice.burrow.data.remote.JournalRepository
+import com.clarice.burrow.data.remote.RetrofitClient
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
 
+// ==================== MAIN APP SCAFFOLD - NAVBAR ALWAYS VISIBLE ====================
+@Composable
+fun MainAppScaffold(
+    currentRoute: String,
+    onNavigate: (String) -> Unit,
+    content: @Composable () -> Unit
+) {
+    Scaffold(
+        bottomBar = {
+            com.clarice.burrow.ui.view.BottomNavBar(
+                currentRoute = currentRoute,
+                onNavigate = onNavigate
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            content()
+        }
+    }
+}
+
+// Temporary placeholder screen for unimplemented views
+@Composable
+fun PlaceholderScreen(
+    title: String,
+    currentRoute: String,
+    onLogout: (() -> Unit)? = null
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "$title Screen",
+                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
+            )
+            Text(
+                text = "Coming Soon...",
+                style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
+            )
+
+            onLogout?.let {
+                Button(
+                    onClick = it
+                ) {
+                    Text("Logout")
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel
 ) {
+    val context = LocalContext.current
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    val journalViewModel: JournalViewModel = viewModel()
-    val userId by authViewModel.userId.collectAsState()
+    val journalRepository = JournalRepository(RetrofitClient.getApiService(context))
+    val journalViewModel: JournalViewModel = viewModel(factory = JournalViewModel.Factory(journalRepository))
+    val userIdValue by authViewModel.userId.collectAsState()
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"
@@ -92,173 +162,171 @@ fun NavGraph(
             )
         }
 
-        // ==================== MAIN APP SCREENS ====================
+        // ==================== MAIN APP SCREENS (WITH PERSISTENT NAVBAR) ====================
 
         // Sleep Tracker Screen (Main Screen)
         composable("sleep_tracker") {
-            SleepTrackerView(
+            MainAppScaffold(
                 currentRoute = "sleep_tracker",
                 onNavigate = { route ->
                     navController.navigate(route) {
-                        // Avoid multiple copies of same destination
-                        popUpTo("sleep_tracker") {
-                            saveState = true
-                        }
+                        popUpTo("sleep_tracker") { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }
-                },
-                onStatisticsClick = {
-                    navController.navigate("statistics")
                 }
-            )
+            ) {
+                SleepTrackerView(
+                    currentRoute = "sleep_tracker",
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo("sleep_tracker") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onStatisticsClick = {
+                        navController.navigate("statistics")
+                    }
+                )
+            }
         }
 
         // Statistics Screen
         composable("statistics") {
-            StatisticsView(
+            MainAppScaffold(
                 currentRoute = "statistics",
                 onNavigate = { route ->
                     navController.navigate(route) {
-                        popUpTo("sleep_tracker") {
-                            saveState = true
-                        }
+                        popUpTo("sleep_tracker") { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }
-                },
-                onBack = {
-                    navController.navigateUp()
                 }
-            )
+            ) {
+                StatisticsView(
+                    currentRoute = "statistics",
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo("sleep_tracker") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onBack = {
+                        navController.navigateUp()
+                    }
+                )
+            }
         }
 
         // Journal List Screen
         composable("journal_list") {
-            JournalListScreen(
-                viewModel = journalViewModel,
-                userId = userId,
-                onAdd = {
-                    navController.navigate("journal_entry")
-                },
-                onOpen = { id: Int ->
-                    navController.navigate("journal_entry/$id")
+            MainAppScaffold(
+                currentRoute = "journal_list",
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo("sleep_tracker") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            )
+            ) {
+                android.util.Log.d("NavGraph", "Journal list composable - userIdValue: $userIdValue")
+                if (userIdValue != null) {
+                    android.util.Log.d("NavGraph", "Rendering JournalListScreen with userId: $userIdValue")
+                    JournalListScreen(
+                        viewModel = journalViewModel,
+                        userId = userIdValue!!,
+                        onAdd = {
+                            navController.navigate("journal_entry")
+                        },
+                        onOpen = { id: Int ->
+                            navController.navigate("journal_entry/$id")
+                        }
+                    )
+                } else {
+                    android.util.Log.e("NavGraph", "userIdValue is null - JournalListScreen not rendered!")
+                }
+            }
         }
 
-
-
-
-        // Journal Entry Screen (with ID parameter)
+        // Journal Entry Screen (Create new)
         composable("journal_entry") {
-            JournalEntryScreen(
-                viewModel = journalViewModel,
-                userId = userId,
-                journalId = null,
-                onBack = { navController.navigateUp() },
-                onSaved = { navController.navigateUp() }
+            if (userIdValue != null) {
+                JournalEntryScreen(
+                    viewModel = journalViewModel,
+                    userId = userIdValue!!,
+                    journalId = null,
+                    onBack = { navController.navigateUp() },
+                    onSaved = { navController.navigateUp() }
+                )
+            }
+        }
+
+        // Journal Entry Screen (Edit existing)
+        composable(
+            route = "journal_entry/{journalId}",
+            arguments = listOf(
+                navArgument("journalId") { type = NavType.IntType }
             )
+        ) { backStackEntry ->
+            val journalId = backStackEntry.arguments?.getInt("journalId")
+            if (userIdValue != null) {
+                JournalEntryScreen(
+                    viewModel = journalViewModel,
+                    userId = userIdValue!!,
+                    journalId = journalId,
+                    onBack = { navController.navigateUp() },
+                    onSaved = { navController.navigateUp() }
+                )
+            }
         }
 
 
 
         // Music List Screen
         composable("music_list") {
-            PlaceholderScreen(
-                title = "Music",
+            MainAppScaffold(
                 currentRoute = "music_list",
                 onNavigate = { route ->
                     navController.navigate(route) {
-                        popUpTo("sleep_tracker") {
-                            saveState = true
-                        }
+                        popUpTo("sleep_tracker") { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }
                 }
-            )
-        }
-
-        // Music Player Screen
-        composable("music_player") {
-            PlaceholderScreen(
-                title = "Music Player",
-                currentRoute = "music_player",
-                onNavigate = { route ->
-                    navController.navigate(route)
-                }
-            )
+            ) {
+                PlaceholderScreen(
+                    title = "Music",
+                    currentRoute = "music_list"
+                )
+            }
         }
 
         // Edit Profile Screen
         composable("edit_profile") {
-            PlaceholderScreen(
-                title = "Profile",
+            MainAppScaffold(
                 currentRoute = "edit_profile",
                 onNavigate = { route ->
                     navController.navigate(route) {
-                        popUpTo("sleep_tracker") {
-                            saveState = true
-                        }
+                        popUpTo("sleep_tracker") { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }
-                },
-                onLogout = {
-                    authViewModel.logout {
-                        navController.navigate("welcome") {
-                            popUpTo(0) { inclusive = true }
+                }
+            ) {
+                PlaceholderScreen(
+                    title = "Profile",
+                    currentRoute = "edit_profile",
+                    onLogout = {
+                        authViewModel.logout {
+                            navController.navigate("welcome") {
+                                popUpTo(0) { inclusive = true }
+                            }
                         }
                     }
-                }
-            )
-        }
-    }
-}
-
-// Temporary placeholder screen for unimplemented views
-@Composable
-private fun PlaceholderScreen(
-    title: String,
-    currentRoute: String,
-    onNavigate: (String) -> Unit,
-    onLogout: (() -> Unit)? = null
-) {
-    androidx.compose.material3.Scaffold(
-        bottomBar = {
-            com.clarice.burrow.ui.view.BottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = onNavigate
-            )
-        }
-    ) { paddingValues ->
-        androidx.compose.foundation.layout.Box(
-            modifier = androidx.compose.ui.Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = androidx.compose.ui.Alignment.Center
-        ) {
-            androidx.compose.foundation.layout.Column(
-                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
-            ) {
-                androidx.compose.material3.Text(
-                    text = "$title Screen",
-                    style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
                 )
-                androidx.compose.material3.Text(
-                    text = "Coming Soon...",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
-                )
-
-                onLogout?.let {
-                    androidx.compose.material3.Button(
-                        onClick = it
-                    ) {
-                        androidx.compose.material3.Text("Logout")
-                    }
-                }
             }
         }
     }

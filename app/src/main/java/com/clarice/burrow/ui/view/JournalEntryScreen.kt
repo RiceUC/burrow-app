@@ -1,4 +1,4 @@
-package com.kiara.journal.ui.journal
+package com.clarice.burrow.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -6,9 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clarice.burrow.R
 import com.clarice.burrow.ui.model.journal.MoodType
-import android.util.Log
 import com.clarice.burrow.ui.viewmodel.JournalViewModel
 import kotlin.text.isEmpty
 import kotlin.text.isNotEmpty
@@ -39,30 +38,35 @@ fun JournalEntryScreen(
     var content by remember { mutableStateOf("") }
 
     val isEditMode = journalId != null
-    val currentJournal by viewModel.currentJournal.collectAsState()
-    val journal by viewModel.currentJournal.collectAsState()
+    val currentJournal by viewModel.currentJournal.collectAsState(initial = null)
+    val isSaving by viewModel.isSaving.collectAsState()
 
-
-    // LaunchedEffect untuk load & untuk observe data
+    // Reset when switching between create/edit mode
     LaunchedEffect(journalId) {
-        if (isEditMode && journalId != null) {
-            Log.d("JournalEntryScreen", "Triggering load for journalId=$journalId")
+        if (journalId == null) {
+            // Creating new entry - reset to defaults
+            android.util.Log.d("JournalEntryScreen", "Creating new entry - resetting fields")
+            selectedMood = MoodType.HAPPY
+            content = ""
+        } else {
+            // Editing existing entry - load from API
+            android.util.Log.d("JournalEntryScreen", "Loading entry $journalId")
             viewModel.loadJournal(journalId)
         }
     }
 
-    //update UI ketika currentJournal berubah
+    // Only update fields when loading an existing journal
     LaunchedEffect(currentJournal) {
-        if (currentJournal != null) {
-            Log.d("JournalEntryScreen", "Updating UI with journal: ${currentJournal!!.content}, mood=${currentJournal!!.mood}")
+        if (currentJournal != null && isEditMode) {
+            android.util.Log.d("JournalEntryScreen", "Journal loaded: mood=${currentJournal!!.mood}")
             content = currentJournal!!.content
             selectedMood = try {
-                MoodType.valueOf(currentJournal!!.mood)
+                // Convert from lowercase (from API) to uppercase for enum
+                MoodType.valueOf(currentJournal!!.mood.uppercase())
             } catch (e: Exception) {
-                Log.e("JournalEntryScreen", "Invalid mood: ${currentJournal!!.mood}")
+                android.util.Log.e("JournalEntryScreen", "Error parsing mood: ${currentJournal!!.mood}", e)
                 MoodType.HAPPY
             }
-            Log.d("JournalEntryScreen", "After update: content=$content, selectedMood=$selectedMood")
         }
     }
 
@@ -90,7 +94,7 @@ fun JournalEntryScreen(
             ) {
 
                 Icon(
-                    imageVector = Icons.Rounded.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                     contentDescription = "Back",
                     tint = Color.White,
                     modifier = Modifier
@@ -103,25 +107,22 @@ fun JournalEntryScreen(
                     fontSize = 18.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable {
-                        if (content.isNotEmpty()) {
-                            if (isEditMode && journalId != null) {
-                                Log.d("JournalEntryScreen", "Updating journal id=$journalId, mood=$selectedMood")
-                                viewModel.updateJournalData(
-                                    journalId = journalId,
-                                    userId = userId,
-                                    content = content,
-                                    mood = selectedMood
-                                )
-                            } else {
-                                Log.d("JournalEntryScreen", "Creating new journal, mood=$selectedMood")
-                                viewModel.addJournal(
-                                    content = content,
-                                    mood = selectedMood,
-                                    userId = userId
-                                )
-                            }
-                            onSaved()
+                    modifier = Modifier.clickable(enabled = !isSaving && content.isNotEmpty()) {
+                        if (isEditMode && journalId != null) {
+                            viewModel.updateJournal(
+                                journalId = journalId,
+                                userId = userId,
+                                content = content,
+                                mood = selectedMood,
+                                onComplete = { onSaved() }
+                            )
+                        } else {
+                            viewModel.addJournal(
+                                userId = userId,
+                                content = content,
+                                mood = selectedMood,
+                                onComplete = { onSaved() }
+                            )
                         }
                     }
                 )

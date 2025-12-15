@@ -7,7 +7,11 @@ import com.clarice.burrow.ui.model.auth.UpdateProfileRequest
 import com.clarice.burrow.ui.model.auth.*
 import com.clarice.burrow.ui.model.common.ApiResponse
 import com.clarice.burrow.ui.model.sleep.SleepSession
-import com.kiara.journal.data.model.JournalsResponse
+import com.clarice.burrow.ui.model.journal.JournalsResponse
+import com.clarice.burrow.ui.model.journal.JournalRequest
+import com.clarice.burrow.ui.model.journal.Journal
+import com.clarice.burrow.ui.model.journal.JournalSingleResponse
+import com.clarice.burrow.ui.model.journal.JournalUpdateRequest
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -25,6 +29,11 @@ interface ApiService {
     suspend fun login(
         @Body request: LoginRequest
     ): Response<AuthResponse>
+
+    @POST("api/refresh-token")
+    suspend fun refreshToken(
+        @Body request: RefreshTokenRequest
+    ): Response<RefreshTokenResponse>
 
 
     // ==================== USER ENDPOINTS ====================
@@ -71,25 +80,23 @@ interface ApiService {
     ): Response<ApiResponse<String>>
 
     // ==================== JOURNAL ENDPOINTS ====================
-    @POST("journals")
-    suspend fun createJournal(@Body request: JournalRequest): Response<Journal>
+    @POST("api/journals")
+    suspend fun createJournal(@Body request: JournalRequest): Response<ApiResponse<Journal>>
 
-    @GET("journals/{userId}")
-    suspend fun getJournals(@Path("userId") userId: Int): Response<JournalsResponse>
+    @GET("api/journals/single/{id}")
+    suspend fun getJournal(@Path("id") journalId: Int): Response<ApiResponse<Journal>>
 
+    @GET("api/journals/{userId}")
+    suspend fun getJournals(@Path("userId") userId: Int): Response<ApiResponse<List<Journal>>>
 
-    @GET("journals/single/{id}")
-    suspend fun getJournal(@Path("id") journalId: Int): Response<JournalSingleResponse>
-
-    @PUT("journals/{id}")
+    @PUT("api/journals/{id}")
     suspend fun updateJournal(
         @Path("id") id: Int,
-        @Body request: JournalRequest
-    ): Response<Journal>
+        @Body request: JournalUpdateRequest
+    ): Response<ApiResponse<Journal>>
 
-
-    @DELETE("journals/{id}")
-    suspend fun deleteJournal(@Path("id") id: Int): Response<Unit>
+    @DELETE("api/journals/{id}")
+    suspend fun deleteJournal(@Path("id") id: Int): Response<ApiResponse<String>>
 }
 
 /**
