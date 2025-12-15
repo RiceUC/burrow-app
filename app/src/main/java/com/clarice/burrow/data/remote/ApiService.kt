@@ -7,6 +7,7 @@ import com.clarice.burrow.ui.model.auth.UpdateProfileRequest
 import com.clarice.burrow.ui.model.auth.*
 import com.clarice.burrow.ui.model.common.ApiResponse
 import com.clarice.burrow.ui.model.sleep.SleepSession
+import com.kiara.journal.data.model.JournalsResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -68,6 +69,27 @@ interface ApiService {
     suspend fun deleteSleepSession(
         @Path("sessionId") sessionId: Int
     ): Response<ApiResponse<String>>
+
+    // ==================== JOURNAL ENDPOINTS ====================
+    @POST("journals")
+    suspend fun createJournal(@Body request: JournalRequest): Response<Journal>
+
+    @GET("journals/{userId}")
+    suspend fun getJournals(@Path("userId") userId: Int): Response<JournalsResponse>
+
+
+    @GET("journals/single/{id}")
+    suspend fun getJournal(@Path("id") journalId: Int): Response<JournalSingleResponse>
+
+    @PUT("journals/{id}")
+    suspend fun updateJournal(
+        @Path("id") id: Int,
+        @Body request: JournalRequest
+    ): Response<Journal>
+
+
+    @DELETE("journals/{id}")
+    suspend fun deleteJournal(@Path("id") id: Int): Response<Unit>
 }
 
 /**
