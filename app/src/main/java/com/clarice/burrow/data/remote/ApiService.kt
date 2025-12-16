@@ -70,6 +70,14 @@ interface ApiService {
     ): Response<ApiResponse<String>>
 }
 
+// ==================== MUSIC ENDPOINTS ====================
+
+@GET("api/music")
+suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
+
+@GET("api/music/{id}")
+suspend fun getMusic(@Path("id") id: Int): Response<ApiResponse<MusicResponse>>
+
 /**
  * Sleep request models
  */

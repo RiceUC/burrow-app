@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.clarice.burrow.ui.view.MusicListView
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.clarice.burrow.ui.view.MusicPlayerView
+import com.clarice.burrow.ui.viewmodel.MusicViewModel
 
 @Composable
 fun NavGraph(
@@ -26,6 +30,7 @@ fun NavGraph(
     authViewModel: AuthViewModel
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val musicViewModel: MusicViewModel = viewModel()
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"
@@ -160,29 +165,17 @@ fun NavGraph(
 
         // Music List Screen
         composable("music_list") {
-            PlaceholderScreen(
-                title = "Music",
-                currentRoute = "music_list",
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo("sleep_tracker") {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+            MusicListView(
+                navController = navController,
+                vm = musicViewModel
             )
         }
 
         // Music Player Screen
         composable("music_player") {
-            PlaceholderScreen(
-                title = "Music Player",
-                currentRoute = "music_player",
-                onNavigate = { route ->
-                    navController.navigate(route)
-                }
+            MusicPlayerView(
+                navController = navController,
+                vm = musicViewModel
             )
         }
 
