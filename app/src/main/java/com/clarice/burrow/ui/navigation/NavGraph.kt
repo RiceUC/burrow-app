@@ -92,6 +92,10 @@ fun PlaceholderScreen(
         }
     }
 }
+import com.clarice.burrow.ui.view.MusicListView
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.clarice.burrow.ui.view.MusicPlayerView
+import com.clarice.burrow.ui.viewmodel.MusicViewModel
 
 @Composable
 fun NavGraph(
@@ -103,6 +107,7 @@ fun NavGraph(
     val journalRepository = JournalRepository(RetrofitClient.getApiService(context))
     val journalViewModel: JournalViewModel = viewModel(factory = JournalViewModel.Factory(journalRepository))
     val userIdValue by authViewModel.userId.collectAsState()
+    val musicViewModel: MusicViewModel = viewModel()
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"
@@ -302,6 +307,18 @@ fun NavGraph(
                     currentRoute = "music_list"
                 )
             }
+            MusicListView(
+                navController = navController,
+                vm = musicViewModel
+            )
+        }
+
+        // Music Player Screen
+        composable("music_player") {
+            MusicPlayerView(
+                navController = navController,
+                vm = musicViewModel
+            )
         }
 
         // Edit Profile Screen
