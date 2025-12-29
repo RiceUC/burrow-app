@@ -1,15 +1,12 @@
 package com.clarice.burrow.data.repository
 
-import com.clarice.burrow.data.remote.ApiClient
-import com.clarice.burrow.ui.model.music.Music
+import com.clarice.burrow.data.remote.
+import com.clarice.burrow.ui.model.music.MusicResponse
 
 class MusicRepository {
 
-    suspend fun getAllMusic(): List<Music> {
+    suspend fun getAllMusic(): List<MusicResponse> {
         val response = ApiClient.apiService.getAllMusic()
-        if (response.isSuccessful) {
-            return response.body()?.data ?: emptyList()
-        }
-        return emptyList()
+        return response.body()?.data ?: emptyList()
     }
 }

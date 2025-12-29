@@ -24,21 +24,16 @@ class MusicViewModel : ViewModel() {
     private val _musicList = MutableStateFlow<List<MusicModel>>(emptyList())
     val musicList: StateFlow<List<MusicModel>> = _musicList.asStateFlow()
 
-    fun loadMusic() {
-        viewModelScope.launch {
-            val musicFromApi = repository.getAllMusic()
+    private fun loadStaticMusic() {
+        _musicList.value = listOf(
+            MusicModel(1, "Night Island", "About to sleep", 30, R.drawable.sleep_1),
+            MusicModel(2, "Moon Garden", "About to sleep", 30, R.drawable.sleep_2),
+            MusicModel(3, "Owl Dream", "About to sleep", 30, R.drawable.sleep_3),
 
-            _musicList.value = musicFromApi.map {
-                MusicModel(
-                    id = it.id,
-                    title = it.title,
-                    subtitle = it.artist ?: "Sleep Music",
-                    duration = it.duration ?: 0,
-                    imageRes = R.drawable.sleep_1, // sementara
-                    audioUrl = it.file_url
-                )
-            }
-        }
+            MusicModel(4, "Deep Night Owl", "While sleeping", 60, R.drawable.sleep_1),
+            MusicModel(5, "Galaxy Dream", "While sleeping", 60, R.drawable.sleep_2),
+            MusicModel(6, "Calm Moon", "While sleeping", 60, R.drawable.sleep_3)
+        )
     }
 
     // ================= PLAYER STATE =================

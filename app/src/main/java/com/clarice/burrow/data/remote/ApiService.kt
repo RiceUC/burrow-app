@@ -7,6 +7,7 @@ import com.clarice.burrow.ui.model.auth.UpdateProfileRequest
 import com.clarice.burrow.ui.model.auth.*
 import com.clarice.burrow.ui.model.common.ApiResponse
 import com.clarice.burrow.ui.model.sleep.SleepSession
+import com.clarice.burrow.ui.model.music.MusicResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -93,3 +94,13 @@ data class SleepStatistics(
     val best_sleep_quality: Int,
     val worst_sleep_quality: Int
 )
+
+// ==================== MUSIC ENDPOINTS ====================
+
+@GET("api/music")
+suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
+
+@GET("api/music/{id}")
+suspend fun getMusicById(
+    @Path("id") id: Int
+): Response<ApiResponse<MusicResponse>>
