@@ -44,19 +44,10 @@ fun StatisticsView(
         viewModel.updatePeriod(selectedPeriod)
     }
 
-    Scaffold(
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = onNavigate
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
             // Background image
             Image(
                 painter = painterResource(id = R.drawable.trackerbg),
@@ -424,7 +415,7 @@ fun StatisticsView(
             }
         }
     }
-}
+
 
 @Composable
 private fun StatsCard(
