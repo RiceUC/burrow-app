@@ -56,10 +56,19 @@ fun SleepTrackerView(
         android.util.Log.d("SleepTracker", "Button text: ${viewModel.getButtonText()}")
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = currentRoute,
+                onNavigate = onNavigate
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             // Background image
             Image(
                 painter = painterResource(id = R.drawable.trackerbg),
@@ -393,6 +402,7 @@ fun SleepTrackerView(
                 }
             }
         }
+    }
 
     // Sleep Quality Dialog
     if (showSleepQualityDialog) {

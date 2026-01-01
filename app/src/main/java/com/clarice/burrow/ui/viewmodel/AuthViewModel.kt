@@ -19,8 +19,6 @@ import kotlinx.coroutines.launch
  * AuthViewModel - Handles authentication logic for Login and Register
  */
 class AuthViewModel(context: Context) : ViewModel() {
-    private val _userId = MutableStateFlow<Int?>(null)
-    val userId: StateFlow<Int?> = _userId.asStateFlow()
 
     private val apiService = RetrofitClient.getApiService(context)
     private val tokenManager = TokenManager(context)
@@ -60,7 +58,6 @@ class AuthViewModel(context: Context) : ViewModel() {
      * Perform login
      */
     fun login(onSuccess: () -> Unit) {
-
         // Validation
         if (loginState.username.isBlank()) {
             loginState = loginState.copy(error = "Username cannot be empty")
@@ -82,7 +79,6 @@ class AuthViewModel(context: Context) : ViewModel() {
 
             when (result) {
                 is NetworkResult.Success -> {
-                    _userId.value = result.data?.user?.userId
                     loginState = loginState.copy(
                         isLoading = false,
                         isSuccess = true
@@ -212,18 +208,8 @@ class AuthViewModel(context: Context) : ViewModel() {
      */
     private fun checkLoginStatus() {
         viewModelScope.launch {
-            // Check if logged in and restore userId
             authRepository.isLoggedIn().collect { isLoggedIn ->
                 _isLoggedIn.value = isLoggedIn
-                android.util.Log.d("AuthViewModel", "checkLoginStatus: isLoggedIn=$isLoggedIn")
-                
-                if (isLoggedIn) {
-                    // Restore userId from token manager
-                    authRepository.getCurrentUserId().collect { userId ->
-                        _userId.value = userId
-                        android.util.Log.d("AuthViewModel", "Restored userId from tokenManager: $userId")
-                    }
-                }
             }
         }
     }
