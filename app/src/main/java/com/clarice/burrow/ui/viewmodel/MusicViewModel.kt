@@ -95,7 +95,7 @@ class MusicViewModel : ViewModel() {
         startPhase(_aboutDuration.value!!)
     }
 
-    private fun canPlay(): Boolean =
+    fun canPlay(): Boolean =
         _aboutSleepMusic.value != null &&
                 _whileSleepMusic.value != null &&
                 _aboutDuration.value != null &&
@@ -134,4 +134,17 @@ class MusicViewModel : ViewModel() {
             _aboutSleepMusic.value
         else
             _whileSleepMusic.value
+
+    fun togglePlay() {
+        _isPlaying.value = !_isPlaying.value
+    }
+
+    fun seekTo(sec: Int) {
+        val validSec = sec.coerceIn(0, _totalSec.value)
+        _currentSec.value = validSec
+    }
+
+    init {
+        loadStaticMusic()
+    }
 }

@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.clarice.burrow.ui.screens
+package com.clarice.burrow.ui.view
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background

@@ -29,9 +29,9 @@ import com.clarice.burrow.ui.viewmodel.MusicViewModel
 @Composable
 fun MusicListView(navController: NavController, vm: MusicViewModel) {
 
-    val musicList = vm.musicList
-    val aboutTimer = vm.aboutDuration.value ?: 30
-    val whileTimer = vm.whileDuration.value ?: 10
+    val musicList by vm.musicList.collectAsState()
+    val aboutTimer by vm.aboutDuration.collectAsState(initial = 30)
+    val whileTimer by vm.whileDuration.collectAsState(initial = 10)
     val durations = vm.timerOptions
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -119,7 +119,7 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
 
             DurationRow(
                 title = "Play for",
-                selected = aboutTimer,
+                selected = aboutTimer ?: 30,
                 options = durations,
                 onSelect = vm::setAboutDuration
             )
@@ -139,7 +139,7 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
 
             DurationRow(
                 title = "Play for",
-                selected = whileTimer,
+                selected = whileTimer ?: 10,
                 options = durations,
                 onSelect = vm::setWhileDuration
             )

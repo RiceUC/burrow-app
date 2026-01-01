@@ -1,6 +1,5 @@
 package com.clarice.burrow.ui.navigation
 
-import com.clarice.burrow.ui.view.SignInView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -10,8 +9,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.clarice.burrow.ui.screens.SignUpView
-import com.clarice.burrow.ui.screens.WelcomeView
+import com.clarice.burrow.ui.view.SignInView
+import com.clarice.burrow.ui.view.SignUpView
+import com.clarice.burrow.ui.view.WelcomeView
 import com.clarice.burrow.ui.view.SleepTrackerView
 import com.clarice.burrow.ui.view.StatisticsView
 import com.clarice.burrow.ui.viewmodel.AuthViewModel

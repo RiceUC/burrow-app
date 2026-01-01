@@ -1,4 +1,4 @@
-package com.clarice.burrow.ui.screens
+package com.clarice.burrow.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

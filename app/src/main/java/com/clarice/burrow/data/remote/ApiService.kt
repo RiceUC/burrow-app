@@ -10,6 +10,8 @@ import com.clarice.burrow.ui.model.sleep.SleepSession
 import com.clarice.burrow.ui.model.music.MusicResponse
 import retrofit2.Response
 import retrofit2.http.*
+import com.clarice.burrow.ui.model.auth.User
+import com.clarice.burrow.ui.model.auth.AuthResponse
 
 // Retrofit API Service (defines all API endpoints)
 interface ApiService {
@@ -69,6 +71,16 @@ interface ApiService {
     suspend fun deleteSleepSession(
         @Path("sessionId") sessionId: Int
     ): Response<ApiResponse<String>>
+
+    // ==================== MUSIC ENDPOINTS ====================
+
+    @GET("api/music")
+    suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
+
+    @GET("api/music/{id}")
+    suspend fun getMusicById(
+        @Path("id") id: Int
+    ): Response<ApiResponse<MusicResponse>>
 }
 
 /**
@@ -94,13 +106,3 @@ data class SleepStatistics(
     val best_sleep_quality: Int,
     val worst_sleep_quality: Int
 )
-
-// ==================== MUSIC ENDPOINTS ====================
-
-@GET("api/music")
-suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
-
-@GET("api/music/{id}")
-suspend fun getMusicById(
-    @Path("id") id: Int
-): Response<ApiResponse<MusicResponse>>
