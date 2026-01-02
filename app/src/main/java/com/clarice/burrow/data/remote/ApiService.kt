@@ -69,6 +69,13 @@ interface ApiService {
     suspend fun deleteSleepSession(
         @Path("sessionId") sessionId: Int
     ): Response<ApiResponse<String>>
+
+    // ==================== MUSIC ENDPOINTS ====================
+    @GET("api/music")
+    suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
+
+    @GET("api/music/{id}")
+    suspend fun getMusic(@Path("id") id: Int): Response<ApiResponse<MusicResponse>>
 }
 
 /**
@@ -94,13 +101,3 @@ data class SleepStatistics(
     val best_sleep_quality: Int,
     val worst_sleep_quality: Int
 )
-
-// ==================== MUSIC ENDPOINTS ====================
-
-@GET("api/music")
-suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
-
-@GET("api/music/{id}")
-suspend fun getMusicById(
-    @Path("id") id: Int
-): Response<ApiResponse<MusicResponse>>

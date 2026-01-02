@@ -30,7 +30,10 @@ fun NavGraph(
     authViewModel: AuthViewModel
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    val musicViewModel: MusicViewModel = viewModel()
+    val context = LocalContext.current
+    val musicViewModel: MusicViewModel = viewModel {
+        MusicViewModel(context.applicationContext as android.app.Application)
+    }
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"

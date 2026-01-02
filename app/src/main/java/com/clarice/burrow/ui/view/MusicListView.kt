@@ -2,6 +2,7 @@ package com.clarice.burrow.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,132 +31,163 @@ import com.clarice.burrow.ui.viewmodel.MusicViewModel
 fun MusicListView(navController: NavController, vm: MusicViewModel) {
 
     val musicList = vm.musicList
-    val aboutTimer = vm.aboutDuration.value ?: 30
-    val whileTimer = vm.whileDuration.value ?: 10
+    val aboutTimer by vm.aboutDuration.collectAsState()
+    val whileTimer by vm.whileDuration.collectAsState()
     val durations = vm.timerOptions
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val aboutSelectedList by vm.aboutSleepMusic.collectAsState()
+    val whileSelectedList by vm.whileSleepMusic.collectAsState()
 
-        Image(
-            painter = painterResource(R.drawable.musiclistview),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(Color(0xFF5B66B8))
-                        .clickable { navController.popBackStack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-
-                Button(
-                    enabled = vm.canPlay(),
-                    onClick = {
-                        navController.navigate("player")
-                        vm.startPlayer()
-                    },
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF5B66B8),
-                        disabledContainerColor = Color(0xFF3F447A)
-                    )
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Play", color = Color.White)
-                        Spacer(Modifier.width(6.dp))
-                        Text(">", color = Color.White)
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = "music_list",
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo("music_list") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 }
-            }
+            )
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)) {
 
-            Spacer(Modifier.height(18.dp))
+            Image(
+                painter = painterResource(R.drawable.musiclistview),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
 
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                Text("Sleep Music", color = Color.White)
-                Text(
-                    "Music will play when you start the sleep tracker ~",
-                    color = Color(0xFFAFB8D0)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Color(0xFF5B66B8))
+                            .clickable { navController.popBackStack() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+
+                    Button(
+                        enabled = vm.canPlay(),
+                        onClick = {
+                            vm.startPlayer()
+                            navController.navigate("music_player")
+                        },
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF5B66B8),
+                            disabledContainerColor = Color(0xFF3F447A)
+                        )
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Play", color = Color.White)
+                            Spacer(Modifier.width(6.dp))
+                            Text(">", color = Color.White)
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(18.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Sleep Music", color = Color.White)
+                    Text(
+                        "Music will play when you start the sleep tracker ~",
+                        color = Color(0xFFAFB8D0)
+                    )
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Text("About to sleep", color = Color.White)
+                Spacer(Modifier.height(10.dp))
+
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(musicList.filter { it.category == "About to sleep" }
+                    ) { item ->
+                        MusicItemCard(
+                            item = item,
+                            isSelected = aboutSelectedList.contains(item)
+                        ) {
+                            vm.selectAboutMusic(item)
+                        }
+                    }
+                }
+
+                DurationRow(
+                    title = "Play for",
+                    selected = aboutTimer ?: 30,
+                    options = durations,
+                    onSelect = vm::setAboutDuration
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                Text("While sleeping", color = Color.White)
+                Spacer(Modifier.height(10.dp))
+
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(musicList.filter { it.category == "While sleeping" }) { item ->
+                        MusicItemCard(
+                            item = item,
+                            isSelected = whileSelectedList.contains(item)
+                        ) {
+                            vm.selectWhileMusic(item)
+                        }
+                    }
+                }
+
+                DurationRow(
+                    title = "Play for",
+                    selected = whileTimer ?: 10,
+                    options = durations,
+                    onSelect = vm::setWhileDuration
                 )
             }
-
-            Spacer(Modifier.height(20.dp))
-
-            Text("About to sleep", color = Color.White)
-            Spacer(Modifier.height(10.dp))
-
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(musicList.filter { it.category == "About to sleep" }
-                ) { item ->
-                    MusicItemCard(item = item) {
-                        vm.selectAboutMusic(item)
-                    }
-                }
-            }
-
-            DurationRow(
-                title = "Play for",
-                selected = aboutTimer,
-                options = durations,
-                onSelect = vm::setAboutDuration
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            Text("While sleeping", color = Color.White)
-            Spacer(Modifier.height(10.dp))
-
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(musicList.filter { it.category == "While sleeping" }) { item ->
-                    MusicItemCard(item = item) {
-                        vm.selectWhileMusic(item)
-                    }
-                }
-            }
-
-            DurationRow(
-                title = "Play for",
-                selected = whileTimer,
-                options = durations,
-                onSelect = vm::setWhileDuration
-            )
         }
     }
 }
 
 @Composable
-fun MusicItemCard(item: MusicModel, onClick: () -> Unit) {
+fun MusicItemCard(item: MusicModel, isSelected: Boolean = false, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { onClick() }
     ) {
         Card(
             shape = CircleShape,
-            elevation = CardDefaults.cardElevation(6.dp)
+            elevation = CardDefaults.cardElevation(6.dp),
+            modifier = Modifier.border(
+                width = if (isSelected) 4.dp else 0.dp,
+                color = if (isSelected) Color.White else Color.Transparent,
+                shape = CircleShape
+            )
         ) {
             Image(
                 painter = painterResource(item.imageRes),
@@ -169,6 +201,7 @@ fun MusicItemCard(item: MusicModel, onClick: () -> Unit) {
         Text(item.title, color = Color.White)
     }
 }
+
 @Composable
 fun DurationRow(
     title: String,

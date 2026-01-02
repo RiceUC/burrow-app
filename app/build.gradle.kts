@@ -68,4 +68,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    // Core player (required)
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+
+// MediaItem, Player, timelines, etc.
+    implementation("androidx.media3:media3-common:1.3.1")
+
+// PlayerView, UI controls (required if you use PlayerView)
+    implementation("androidx.media3:media3-ui:1.3.1")
 }

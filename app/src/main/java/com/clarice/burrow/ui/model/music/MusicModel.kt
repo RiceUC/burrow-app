@@ -1,9 +1,10 @@
 package com.clarice.burrow.ui.model.music
 
-data class MusicModel (
+data class MusicModel(
     val id: Int,
     val title: String,
     val category: String,
-    val durationMinutes: Int,
-    val imageRes: Int
+    val duration: Int,
+    val imageRes: Int,
+    val audioUrl: String = ""
 )

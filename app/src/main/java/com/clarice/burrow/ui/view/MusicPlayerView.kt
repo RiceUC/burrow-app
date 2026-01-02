@@ -26,12 +26,12 @@ fun MusicPlayerView(
     navController: NavController,
     vm: MusicViewModel
 ) {
-    val music = vm.getCurrentMusic()
+    val music by vm.currentMusic.collectAsState()
     val currentSec by vm.currentSec.collectAsState()
     val totalSec by vm.totalSec.collectAsState()
     val isPlaying by vm.isPlaying.collectAsState()
     val phase by vm.phase.collectAsState()
-    val shouldExit by vm.shouldExitPlayer.collectAsState() // ✅ FIX
+    val shouldExit by vm.shouldExitPlayer.collectAsState()
 
     LaunchedEffect(shouldExit) {
         if (shouldExit) {
@@ -111,7 +111,7 @@ fun MusicPlayerView(
                     Slider(
                         value = currentSec.toFloat(),
                         onValueChange = { vm.seekTo(it.toInt()) },
-                        valueRange = 0f..totalSec.toFloat(),
+                        valueRange = 0f..totalSec.coerceAtLeast(1).toFloat(),
                         colors = SliderDefaults.colors(
                             thumbColor = Color(0xFFA8B3FF),
                             activeTrackColor = Color(0xFFA8B3FF),
@@ -145,7 +145,6 @@ fun PlayerControls(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // REWIND
         Icon(
             painter = painterResource(R.drawable.rewind_15),
             contentDescription = "rewind",
@@ -155,7 +154,6 @@ fun PlayerControls(
                 .clickable { onRewind() }
         )
 
-        // PLAY / PAUSE
         Box(
             modifier = Modifier
                 .size(110.dp)
@@ -173,7 +171,6 @@ fun PlayerControls(
             )
         }
 
-        // FORWARD
         Icon(
             painter = painterResource(R.drawable.forward_15),
             contentDescription = "forward",
@@ -199,7 +196,6 @@ fun PlayerSection(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // Rewind 15
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 painter = painterResource(id = R.drawable.rewind_15),
@@ -212,7 +208,6 @@ fun PlayerSection(
             Text("15", color = Color.White, fontSize = 14.sp)
         }
 
-        // Play / Pause
         Box(
             modifier = Modifier
                 .size(110.dp)
@@ -229,7 +224,6 @@ fun PlayerSection(
             )
         }
 
-        // Forward 15
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 painter = painterResource(id = R.drawable.forward_15),
