@@ -17,46 +17,30 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class TokenManager(private val context: Context) {
 
     companion object {
-        private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
-        private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
+        private val TOKEN_KEY = stringPreferencesKey("auth_token")
         private val USER_ID_KEY = stringPreferencesKey("user_id")
         private val USERNAME_KEY = stringPreferencesKey("username")
     }
 
-    // Save tokens after login
-    suspend fun saveTokens(accessToken: String, refreshToken: String) {
+    // Save authentication token
+    suspend fun saveToken(token: String) {
         context.dataStore.edit { preferences ->
-            preferences[ACCESS_TOKEN_KEY] = accessToken
-            preferences[REFRESH_TOKEN_KEY] = refreshToken
+            preferences[TOKEN_KEY] = token
         }
     }
 
-    // Get access token as Flow
-    fun getAccessToken(): Flow<String?> {
+    // Get authentication token as Flow
+    fun getToken(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
-            preferences[ACCESS_TOKEN_KEY]
+            preferences[TOKEN_KEY]
         }
     }
 
-    // Get access token (suspend function)
-    suspend fun getAccessTokenDirect(): String? {
+    // Get authentication token (suspend function)
+    suspend fun getTokenDirect(): String? {
         return context.dataStore.data.map { preferences ->
-            preferences[ACCESS_TOKEN_KEY]
+            preferences[TOKEN_KEY]
         }.first()
-    }
-
-    // Get refresh token
-    suspend fun getRefreshTokenDirect(): String? {
-        return context.dataStore.data.map { preferences ->
-            preferences[REFRESH_TOKEN_KEY]
-        }.first()
-    }
-
-    // Update access token (after refresh)
-    suspend fun updateAccessToken(newAccessToken: String) {
-        context.dataStore.edit { preferences ->
-            preferences[ACCESS_TOKEN_KEY] = newAccessToken
-        }
     }
 
     // Save user info
@@ -91,7 +75,7 @@ class TokenManager(private val context: Context) {
     // Check if user is logged in
     fun isLoggedIn(): Flow<Boolean> {
         return context.dataStore.data.map { preferences ->
-            preferences[ACCESS_TOKEN_KEY] != null
+            preferences[TOKEN_KEY] != null
         }
     }
 }
