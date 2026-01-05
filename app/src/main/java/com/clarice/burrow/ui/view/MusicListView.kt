@@ -28,7 +28,12 @@ import com.clarice.burrow.ui.model.music.MusicModel
 import com.clarice.burrow.ui.viewmodel.MusicViewModel
 
 @Composable
-fun MusicListView(navController: NavController, vm: MusicViewModel) {
+fun MusicListView(
+    navController: NavController,
+    vm: MusicViewModel,
+    currentRoute: String = "music_list",
+    onNavigate: (String) -> Unit = { route -> navController.navigate(route) }
+) {
 
     val musicList = vm.musicList
     val aboutTimer by vm.aboutDuration.collectAsState()
@@ -41,14 +46,8 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
     Scaffold(
         bottomBar = {
             BottomNavBar(
-                currentRoute = "music_list",
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo("music_list") { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+                currentRoute = currentRoute,
+                onNavigate = onNavigate
             )
         }
     ) { paddingValues ->
@@ -94,7 +93,7 @@ fun MusicListView(navController: NavController, vm: MusicViewModel) {
                         enabled = vm.canPlay(),
                         onClick = {
                             vm.startPlayer()
-                            navController.navigate("music_player")
+                            navController.navigate("music_player/0")
                         },
                         shape = RoundedCornerShape(24.dp),
                         colors = ButtonDefaults.buttonColors(

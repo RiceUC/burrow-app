@@ -27,7 +27,7 @@ interface ApiService {
     ): Response<AuthResponse>
 
 
-    // ==================== USER ENDPOINTS ====================
+    // USER ENDPOINTS 
 
     @GET("api/users/profile")
     suspend fun getProfile(): Response<ApiResponse<User>>
@@ -76,6 +76,25 @@ interface ApiService {
 
     @GET("api/music/{id}")
     suspend fun getMusic(@Path("id") id: Int): Response<ApiResponse<MusicResponse>>
+
+    // ==================== JOURNAL ENDPOINTS ====================
+    @GET("api/journals")
+    suspend fun getAllJournals(): Response<ApiResponse<List<Journal>>>
+
+    @GET("api/journals/{id}")
+    suspend fun getJournal(@Path("id") id: Int): Response<ApiResponse<Journal>>
+
+    @POST("api/journals")
+    suspend fun createJournal(@Body request: CreateJournalRequest): Response<ApiResponse<Journal>>
+
+    @PUT("api/journals/{id}")
+    suspend fun updateJournal(
+        @Path("id") id: Int,
+        @Body request: UpdateJournalRequest
+    ): Response<ApiResponse<Journal>>
+
+    @DELETE("api/journals/{id}")
+    suspend fun deleteJournal(@Path("id") id: Int): Response<ApiResponse<String>>
 }
 
 /**
@@ -100,4 +119,32 @@ data class SleepStatistics(
     val total_sleep_time: Int, // in minutes
     val best_sleep_quality: Int,
     val worst_sleep_quality: Int
+)
+
+/**
+ * Journal Models
+ */
+data class Journal(
+    val id: Int,
+    val user_id: Int,
+    val title: String,
+    val content: String,
+    val mood: String? = null,
+    val tags: List<String>? = null,
+    val created_at: String,
+    val updated_at: String
+)
+
+data class CreateJournalRequest(
+    val title: String,
+    val content: String,
+    val mood: String? = null,
+    val tags: List<String>? = null
+)
+
+data class UpdateJournalRequest(
+    val title: String? = null,
+    val content: String? = null,
+    val mood: String? = null,
+    val tags: List<String>? = null
 )

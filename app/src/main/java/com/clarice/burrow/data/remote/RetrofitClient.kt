@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
     // Use 10.0.2.2 for Android Emulator (maps to localhost)
     // For physical device, replace with your backend IP: http://192.168.x.x:3000/
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "http://10.0.2.2:3000"
 
     private var apiService: ApiService? = null
 

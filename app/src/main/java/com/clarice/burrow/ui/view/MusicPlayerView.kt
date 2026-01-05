@@ -24,7 +24,8 @@ import com.clarice.burrow.ui.viewmodel.PlayerPhase
 @Composable
 fun MusicPlayerView(
     navController: NavController,
-    vm: MusicViewModel
+    vm: MusicViewModel,
+    musicId: Int = 0
 ) {
     val music by vm.currentMusic.collectAsState()
     val currentSec by vm.currentSec.collectAsState()

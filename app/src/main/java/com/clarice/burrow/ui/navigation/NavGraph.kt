@@ -170,15 +170,30 @@ fun NavGraph(
         composable("music_list") {
             MusicListView(
                 navController = navController,
-                vm = musicViewModel
+                vm = musicViewModel,
+                currentRoute = "music_list", // Pass the current route to the view
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo("sleep_tracker") {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
 
         // Music Player Screen
-        composable("music_player") {
+        composable(
+            route = "music_player/{musicId}",
+            arguments = listOf(navArgument("musicId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val musicId = backStackEntry.arguments?.getInt("musicId") ?: 0
             MusicPlayerView(
                 navController = navController,
-                vm = musicViewModel
+                vm = musicViewModel,
+                musicId = musicId
             )
         }
 

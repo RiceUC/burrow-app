@@ -20,7 +20,7 @@ enum class PlayerPhase {
 
 class MusicViewModel(private val app: Application) : AndroidViewModel(app) {
 
-    // 10.0.2.2 = host IP dari emulator, ganti ke 192.168.18.28 jika pakai real device
+    // 10.0.2.2 = host IP dari emulator, ganti ke 192.168.18.245 jika pakai real device
     private val BASE_URL = "http://10.0.2.2:3000"
 
     val musicList = listOf(
