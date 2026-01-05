@@ -7,7 +7,15 @@ import com.clarice.burrow.ui.model.auth.UpdateProfileRequest
 import com.clarice.burrow.ui.model.auth.*
 import com.clarice.burrow.ui.model.common.ApiResponse
 import com.clarice.burrow.ui.model.sleep.SleepSession
+<<<<<<< HEAD
 import com.clarice.burrow.ui.model.music.MusicResponse
+=======
+import com.clarice.burrow.ui.model.journal.JournalsResponse
+import com.clarice.burrow.ui.model.journal.JournalRequest
+import com.clarice.burrow.ui.model.journal.Journal
+import com.clarice.burrow.ui.model.journal.JournalSingleResponse
+import com.clarice.burrow.ui.model.journal.JournalUpdateRequest
+>>>>>>> dbffbdaefdeb84a0278514c38a1c73d9829c520b
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -70,6 +78,7 @@ interface ApiService {
         @Path("sessionId") sessionId: Int
     ): Response<ApiResponse<String>>
 
+<<<<<<< HEAD
     // ==================== MUSIC ENDPOINTS ====================
     @GET("api/music")
     suspend fun getAllMusic(): Response<ApiResponse<List<MusicResponse>>>
@@ -86,11 +95,26 @@ interface ApiService {
 
     @POST("api/journals")
     suspend fun createJournal(@Body request: CreateJournalRequest): Response<ApiResponse<Journal>>
+=======
+    // ==================== JOURNAL ENDPOINTS ====================
+    @POST("api/journals")
+    suspend fun createJournal(@Body request: JournalRequest): Response<ApiResponse<Journal>>
+
+    @GET("api/journals/single/{id}")
+    suspend fun getJournal(@Path("id") journalId: Int): Response<ApiResponse<Journal>>
+
+    @GET("api/journals/{userId}")
+    suspend fun getJournals(@Path("userId") userId: Int): Response<ApiResponse<List<Journal>>>
+>>>>>>> dbffbdaefdeb84a0278514c38a1c73d9829c520b
 
     @PUT("api/journals/{id}")
     suspend fun updateJournal(
         @Path("id") id: Int,
+<<<<<<< HEAD
         @Body request: UpdateJournalRequest
+=======
+        @Body request: JournalUpdateRequest
+>>>>>>> dbffbdaefdeb84a0278514c38a1c73d9829c520b
     ): Response<ApiResponse<Journal>>
 
     @DELETE("api/journals/{id}")
