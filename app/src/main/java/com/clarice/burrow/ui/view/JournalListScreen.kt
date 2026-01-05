@@ -69,7 +69,6 @@ fun JournalListScreen(
     onAdd: () -> Unit,
     onOpen: (Int) -> Unit
 ) {
-    // Debug: Log fetch action BEFORE calling API
     LaunchedEffect(userId) {
         try {
             android.util.Log.d("JournalListScreen", "Fetching journals for userId: $userId")
@@ -89,7 +88,7 @@ fun JournalListScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1B4B)) // Fallback background jika image fail
+            .background(Color(0xFF1E1B4B))
     ) {
 
         Image(
@@ -99,7 +98,6 @@ fun JournalListScreen(
             contentScale = ContentScale.Crop
         )
 
-        // Gradient overlay untuk contrast
         Box(
             modifier = Modifier
                 .fillMaxSize()

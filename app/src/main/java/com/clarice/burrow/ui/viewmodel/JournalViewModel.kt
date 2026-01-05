@@ -13,26 +13,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-// ================= VIEW MODEL =================
-
 class JournalViewModel(
     private val journalRepository: JournalRepository
 ) : ViewModel() {
 
-    // 🔹 Journals list
     private val _journals = MutableStateFlow<List<Journal>>(emptyList())
     val journals: StateFlow<List<Journal>> = _journals.asStateFlow()
-
-    // 🔹 Single journal (edit / detail)
     private val _currentJournal = MutableStateFlow<Journal?>(null)
     val currentJournal: StateFlow<Journal?> = _currentJournal.asStateFlow()
-
-    // 🔹 Loading state for save/update operations
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
-    // ================= ACTIONS =================
 
     fun fetchJournals(userId: Int) {
         viewModelScope.launch {
@@ -117,7 +108,6 @@ class JournalViewModel(
     }
 
     fun deleteJournal(journalId: Int, userId: Int) {
-        // Optimistic delete - remove from UI immediately
         _journals.value = _journals.value.filter { it.journal_id != journalId }
         
         viewModelScope.launch {
@@ -127,7 +117,7 @@ class JournalViewModel(
                 }
                 .onFailure { e ->
                     android.util.Log.e("JournalVM", "Delete failed: ${e.message}")
-                    // If delete fails, reload list to restore item
+                    // kalo failed bakal reload list to restore item
                     fetchJournals(userId)
                 }
         }

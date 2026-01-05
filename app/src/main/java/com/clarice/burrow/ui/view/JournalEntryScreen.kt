@@ -41,27 +41,22 @@ fun JournalEntryScreen(
     val currentJournal by viewModel.currentJournal.collectAsState(initial = null)
     val isSaving by viewModel.isSaving.collectAsState()
 
-    // Reset when switching between create/edit mode
     LaunchedEffect(journalId) {
         if (journalId == null) {
-            // Creating new entry - reset to defaults
             android.util.Log.d("JournalEntryScreen", "Creating new entry - resetting fields")
             selectedMood = MoodType.HAPPY
             content = ""
         } else {
-            // Editing existing entry - load from API
             android.util.Log.d("JournalEntryScreen", "Loading entry $journalId")
             viewModel.loadJournal(journalId)
         }
     }
 
-    // Only update fields when loading an existing journal
     LaunchedEffect(currentJournal) {
         if (currentJournal != null && isEditMode) {
             android.util.Log.d("JournalEntryScreen", "Journal loaded: mood=${currentJournal!!.mood}")
             content = currentJournal!!.content
             selectedMood = try {
-                // Convert from lowercase (from API) to uppercase for enum
                 MoodType.valueOf(currentJournal!!.mood.uppercase())
             } catch (e: Exception) {
                 android.util.Log.e("JournalEntryScreen", "Error parsing mood: ${currentJournal!!.mood}", e)
