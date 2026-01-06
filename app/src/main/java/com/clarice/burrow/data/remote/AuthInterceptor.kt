@@ -15,13 +15,13 @@ class AuthInterceptor(private val tokenManager: TokenManager) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        // Skip token injection for login/register endpoints
+        // Skip token injection for public endpoints (login/register only)
         val url = originalRequest.url.encodedPath
         if (url.contains("/login") || url.contains("/register")) {
             return chain.proceed(originalRequest)
         }
 
-        // Get token and add to header
+        // Get token and add to header for all other endpoints
         val token = runBlocking {
             tokenManager.getToken().first()
         }
@@ -31,6 +31,7 @@ class AuthInterceptor(private val tokenManager: TokenManager) : Interceptor {
                 .header("Authorization", "Bearer $token")
                 .build()
         } else {
+            // If no token, still proceed with request (server will return 401 if needed)
             originalRequest
         }
 

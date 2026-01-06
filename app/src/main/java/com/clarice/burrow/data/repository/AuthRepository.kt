@@ -50,6 +50,8 @@ class AuthRepository(
                     userId = authResponse.user.userId,
                     username = authResponse.user.username
                 )
+                // Reset the API client so a new one is created with the fresh token
+                RetrofitClient.resetClient()
             }
         }
 
