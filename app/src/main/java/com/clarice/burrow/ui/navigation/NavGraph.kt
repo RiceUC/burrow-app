@@ -23,7 +23,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clarice.burrow.ui.viewmodel.JournalViewModel
 import com.clarice.burrow.ui.view.JournalEntryScreen
 import com.clarice.burrow.ui.view.JournalListScreen
-import com.clarice.burrow.data.remote.JournalRepository
+import com.clarice.burrow.data.repository.JournalRepository
+import com.clarice.burrow.ui.view.MusicListView
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.clarice.burrow.ui.view.MusicPlayerView
+import com.clarice.burrow.ui.viewmodel.MusicViewModel
 import com.clarice.burrow.data.remote.RetrofitClient
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -92,10 +96,6 @@ fun PlaceholderScreen(
         }
     }
 }
-import com.clarice.burrow.ui.view.MusicListView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.clarice.burrow.ui.view.MusicPlayerView
-import com.clarice.burrow.ui.viewmodel.MusicViewModel
 
 @Composable
 fun NavGraph(
@@ -104,10 +104,10 @@ fun NavGraph(
 ) {
     val context = LocalContext.current
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    val journalRepository = JournalRepository(RetrofitClient.getApiService(context))
-    val journalViewModel: JournalViewModel = viewModel(factory = JournalViewModel.Factory(journalRepository))
+    val journalRepository = JournalRepository(context)
+    val journalViewModel: JournalViewModel = viewModel<JournalViewModel>(factory = JournalViewModel.Factory(journalRepository))
+    val musicViewModel: MusicViewModel = viewModel<MusicViewModel>()
     val userIdValue by authViewModel.userId.collectAsState()
-    val musicViewModel: MusicViewModel = viewModel()
 
     // Determine start destination based on login status
     val startDestination = if (isLoggedIn) "sleep_tracker" else "welcome"
@@ -287,8 +287,6 @@ fun NavGraph(
                 )
             }
         }
-
-
 
         // Music List Screen
         composable("music_list") {

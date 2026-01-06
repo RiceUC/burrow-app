@@ -34,6 +34,9 @@ class AuthViewModel(context: Context) : ViewModel() {
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
+    val userId: StateFlow<Int?> = tokenManager.getUserId()
+        .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Lazily, null)
+
     init {
         checkLoginStatus()
     }
