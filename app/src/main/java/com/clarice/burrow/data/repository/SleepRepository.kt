@@ -12,9 +12,7 @@ class SleepRepository(
     private val apiService: ApiService
 ) {
 
-    /**
-     * Start a new sleep session
-     */
+    // Start a new sleep session
     suspend fun startSleepSession(
         startTime: LocalDateTime = LocalDateTime.now()
     ): NetworkResult<ApiResponse<SleepSession>> {
@@ -29,9 +27,7 @@ class SleepRepository(
         return safeApiCall { apiService.startSleepSession(request) }
     }
 
-    /**
-     * End an active sleep session
-     */
+    // End an active sleep session
     suspend fun endSleepSession(
         sessionId: Int,
         endTime: LocalDateTime = LocalDateTime.now(),
@@ -49,37 +45,27 @@ class SleepRepository(
         return safeApiCall { apiService.endSleepSession(sessionId, request) }
     }
 
-    /**
-     * Get all sleep sessions for current user
-     */
+    // Get all sleep sessions for current user
     suspend fun getAllSleepSessions(): NetworkResult<ApiResponse<List<SleepSession>>> {
         return safeApiCall { apiService.getAllSleepSessions() }
     }
 
-    /**
-     * Get specific sleep session
-     */
+    // Get specific sleep session
     suspend fun getSleepSession(sessionId: Int): NetworkResult<ApiResponse<SleepSession>> {
         return safeApiCall { apiService.getSleepSession(sessionId) }
     }
 
-    /**
-     * Get sleep statistics
-     */
+    // Get sleep statistics
     suspend fun getSleepStatistics(): NetworkResult<ApiResponse<SleepStatistics>> {
         return safeApiCall { apiService.getSleepStatistics() }
     }
 
-    /**
-     * Delete a sleep session
-     */
+    // Delete a sleep session
     suspend fun deleteSleepSession(sessionId: Int): NetworkResult<ApiResponse<String>> {
         return safeApiCall { apiService.deleteSleepSession(sessionId) }
     }
 
-    /**
-     * Helper: Format duration in minutes to readable string
-     */
+    // Helper: Format duration in minutes to readable string
     fun formatDuration(minutes: Int?): String {
         if (minutes == null) return "N/A"
         val hours = minutes / 60
@@ -87,9 +73,7 @@ class SleepRepository(
         return "${hours}h ${mins}m"
     }
 
-    /**
-     * Helper: Get quality emoji
-     */
+    // Helper: Get quality emoji
     fun getQualityEmoji(quality: Int?): String {
         return when (quality) {
             5 -> "😴" // Excellent

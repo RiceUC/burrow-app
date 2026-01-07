@@ -82,23 +82,17 @@ class AuthRepository(
         tokenManager.clearAll()
     }
 
-    /**
-     * Check if user is logged in
-     */
+    // Check if user is logged in
     fun isLoggedIn(): Flow<Boolean> {
         return tokenManager.isLoggedIn()
     }
 
-    /**
-     * Get current user ID
-     */
+    // Get current user ID
     fun getCurrentUserId(): Flow<Int?> {
         return tokenManager.getUserId()
     }
 
-    /**
-     * Get current username
-     */
+    // Get current username
     fun getCurrentUsername(): Flow<String?> {
         return tokenManager.getUsername()
     }

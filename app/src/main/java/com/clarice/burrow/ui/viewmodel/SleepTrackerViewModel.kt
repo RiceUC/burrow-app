@@ -42,11 +42,9 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         loadUserReminderSettings()
     }
 
-    // ==================== LOAD USER REMINDER SETTINGS ====================
+    // LOAD USER REMINDER SETTINGS
 
-    /**
-     * Load reminder settings from backend
-     */
+    // Load reminder settings from backend
     private fun loadUserReminderSettings() {
         viewModelScope.launch {
             val result = userRepository.getProfile()
@@ -84,7 +82,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== STATE MANAGEMENT ====================
+    // STATE MANAGEMENT
 
     private fun getCurrentState(): SleepSessionState {
         val session = sleepState.currentSession
@@ -95,7 +93,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== START SLEEP SESSION ====================
+    // START SLEEP SESSION
 
     fun startSleepSession(onSuccess: () -> Unit = {}) {
         val currentState = getCurrentState()
@@ -137,7 +135,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== END SLEEP SESSION ====================
+    // END SLEEP SESSION
 
     fun endSleepSession(sleepQuality: Int? = null, onSuccess: () -> Unit = {}) {
         val currentState = getCurrentState()
@@ -194,7 +192,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== RESET SESSION ====================
+    // RESET SESSION
 
     fun resetSession() {
         val currentState = getCurrentState()
@@ -213,7 +211,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         android.util.Log.d("SleepTracker", "Session reset, new state: ${getCurrentState()}")
     }
 
-    // ==================== LOAD SLEEP SESSIONS ====================
+    // LOAD SLEEP SESSIONS
 
     fun loadSleepSessions() {
         sleepState = sleepState.copy(isLoading = true, error = null)
@@ -243,7 +241,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== DELETE SESSION ====================
+    // DELETE SESSION
 
     fun deleteSleepSession(sessionId: Int, onSuccess: () -> Unit) {
         viewModelScope.launch {
@@ -267,7 +265,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== REMINDER MANAGEMENT ====================
+    // REMINDER MANAGEMENT
 
     fun setReminderEnabled(enabled: Boolean) {
         sleepState = sleepState.copy(isReminderEnabled = enabled)
@@ -299,9 +297,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         reminderScheduler.cancelReminder()
     }
 
-    /**
-     * Update reminder time on backend
-     */
+    // Update reminder time on backend
     private fun updateReminderTimeOnBackend(time: LocalTime) {
         viewModelScope.launch {
             val timeString = String.format(Locale.getDefault(), "%02d:%02d", time.hour, time.minute)
@@ -326,7 +322,7 @@ class SleepTrackerViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== HELPERS ====================
+    // HELPERS
 
     private fun checkActiveSession() {
         viewModelScope.launch {

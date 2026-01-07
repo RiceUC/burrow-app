@@ -15,9 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * AuthViewModel - Handles authentication logic for Login and Register
- */
+// AuthViewModel (Handles authentication logic for Login and Register)
 class AuthViewModel(context: Context) : ViewModel() {
     private val _userId = MutableStateFlow<Int?>(null)
     val userId: StateFlow<Int?> = _userId.asStateFlow()
@@ -40,25 +38,19 @@ class AuthViewModel(context: Context) : ViewModel() {
         checkLoginStatus()
     }
 
-    // ==================== LOGIN ====================
+    // LOGIN
 
-    /**
-     * Update login username
-     */
+    // Update login username
     fun updateLoginUsername(username: String) {
         loginState = loginState.copy(username = username, error = null)
     }
 
-    /**
-     * Update login password
-     */
+    // Update login password
     fun updateLoginPassword(password: String) {
         loginState = loginState.copy(password = password, error = null)
     }
 
-    /**
-     * Perform login
-     */
+    // Perform login
     fun login(onSuccess: () -> Unit) {
 
         // Validation
@@ -103,11 +95,9 @@ class AuthViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== REGISTER ====================
+    // REGISTER
 
-    /**
-     * Update register fields
-     */
+    // Update register fields
     fun updateRegisterUsername(username: String) {
         registerState = registerState.copy(username = username, error = null)
     }
@@ -128,9 +118,7 @@ class AuthViewModel(context: Context) : ViewModel() {
         registerState = registerState.copy(gender = gender, error = null)
     }
 
-    /**
-     * Perform registration
-     */
+    // Perform registration
     fun register(onSuccess: () -> Unit) {
         // Validation
         if (registerState.username.isBlank()) {
@@ -191,11 +179,8 @@ class AuthViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== LOGOUT ====================
-
-    /**
-     * Logout user
-     */
+    // LOGOUT
+    // Logout user
     fun logout(onSuccess: () -> Unit) {
         viewModelScope.launch {
             authRepository.logout()
@@ -205,11 +190,9 @@ class AuthViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== HELPERS ====================
+    // HELPERS
 
-    /**
-     * Check if user is already logged in
-     */
+    // Check if user is already logged in
     private fun checkLoginStatus() {
         viewModelScope.launch {
             // Check if logged in and restore userId
@@ -237,32 +220,24 @@ class AuthViewModel(context: Context) : ViewModel() {
         }
     }
 
-    /**
-     * Reset all states
-     */
+    // Reset all states
     private fun resetStates() {
         loginState = LoginState()
         registerState = RegisterState()
     }
 
-    /**
-     * Clear login error
-     */
+    // Clear login error
     fun clearLoginError() {
         loginState = loginState.copy(error = null)
     }
 
-    /**
-     * Clear register error
-     */
+    // Clear register error
     fun clearRegisterError() {
         registerState = registerState.copy(error = null)
     }
 }
 
-/**
- * Login UI State
- */
+// Login UI State
 data class LoginState(
     val username: String = "",
     val password: String = "",
@@ -271,9 +246,7 @@ data class LoginState(
     val isSuccess: Boolean = false
 )
 
-/**
- * Register UI State
- */
+// Register UI State
 data class RegisterState(
     val username: String = "",
     val password: String = "",

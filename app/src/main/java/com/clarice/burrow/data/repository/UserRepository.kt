@@ -11,16 +11,12 @@ class UserRepository(
     private val apiService: ApiService
 ) {
 
-    /**
-     * Get user profile
-     */
+    // Get user profile
     suspend fun getProfile(): NetworkResult<ApiResponse<User>> {
         return safeApiCall { apiService.getProfile() }
     }
 
-    /**
-     * Update user profile
-     */
+    // Update user profile
     suspend fun updateProfile(
         name: String? = null,
         birthdate: String? = null,
@@ -39,9 +35,7 @@ class UserRepository(
         return safeApiCall { apiService.updateProfile(request) }
     }
 
-    /**
-     * Delete user account
-     */
+    // Delete user account
     suspend fun deleteAccount(): NetworkResult<ApiResponse<String>> {
         return safeApiCall { apiService.deleteAccount() }
     }

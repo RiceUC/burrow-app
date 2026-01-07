@@ -11,10 +11,10 @@ sealed class Screen(val route: String) {
     object Statistics : Screen("statistics")
     object JournalList : Screen("journal_list")
 
-    // Journal Entry - Create new
+    // Journal Entry (Create new)
     object JournalEntryCreate : Screen("journal_entry")
 
-    // Journal Entry - Edit existing
+    // Journal Entry (Edit existing)
     object JournalEntry : Screen("journal_entry/{journalId}") {
         fun createRoute(journalId: Int) = "journal_entry/$journalId"
     }

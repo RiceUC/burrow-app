@@ -32,8 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
-import com.clarice.burrow.ui.view.EditProfileScreen
-import com.clarice.burrow.ui.viewmodel.ProfileViewModel
 
 // ==================== MAIN APP SCAFFOLD - NAVBAR ALWAYS VISIBLE ====================
 @Composable
@@ -285,6 +283,8 @@ fun NavGraph(
             }
         }
 
+
+
         // Music List Screen
         composable("music_list") {
             MainAppScaffold(
@@ -297,14 +297,14 @@ fun NavGraph(
                     }
                 }
             ) {
-                val musicViewModel: com.clarice.burrow.ui.viewmodel.MusicViewModel = viewModel()
-                com.clarice.burrow.ui.view.music.MusicListView(
-                    viewModel = musicViewModel
+                PlaceholderScreen(
+                    title = "Music",
+                    currentRoute = "music_list"
                 )
             }
         }
 
-        // Edit Profile Screen - NOW WITH NAVBAR
+        // Edit Profile Screen
         composable("edit_profile") {
             MainAppScaffold(
                 currentRoute = "edit_profile",
@@ -316,10 +316,9 @@ fun NavGraph(
                     }
                 }
             ) {
-                val profileViewModel = ProfileViewModel(context)
-                EditProfileScreen(
-                    viewModel = profileViewModel,
-                    onNavigateBack = { navController.popBackStack() },
+                PlaceholderScreen(
+                    title = "Profile",
+                    currentRoute = "edit_profile",
                     onLogout = {
                         authViewModel.logout {
                             navController.navigate("welcome") {

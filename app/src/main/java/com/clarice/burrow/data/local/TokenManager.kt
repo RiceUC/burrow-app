@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 // DataStore extension
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "burrow_prefs")
 
-// TokenManager - Handles secure token storage using DataStore
+// TokenManager (Handles secure token storage using DataStore)
 class TokenManager(private val context: Context) {
 
     companion object {

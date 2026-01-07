@@ -141,10 +141,8 @@ fun MusicListView(
     }
 }
 
-/**
- * Open YouTube video in YouTube app or browser
- * Tries YouTube app first, falls back to web browser
- */
+// Open YouTube video in YouTube app or browser
+// Tries YouTube app first, falls back to web browser
 private fun openYouTubeVideo(context: android.content.Context, videoId: String) {
     try {
         // Try to open in YouTube app first

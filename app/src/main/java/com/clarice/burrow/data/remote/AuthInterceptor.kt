@@ -5,10 +5,9 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
-/**
- * AuthInterceptor - Automatically adds Bearer token to requests
- * @param tokenManager TokenManager instance for retrieving auth tokens
- */
+// AuthInterceptor (Automatically adds Bearer token to requests)
+// @param tokenManager (TokenManager instance for retrieving auth tokens)
+
 class AuthInterceptor(private val tokenManager: TokenManager) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {

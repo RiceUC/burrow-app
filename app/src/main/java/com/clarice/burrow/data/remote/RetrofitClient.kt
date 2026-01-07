@@ -9,20 +9,16 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-/**
- * RetrofitClient - Singleton for Retrofit instance
- */
+// RetrofitClient - Singleton for Retrofit instance
 object RetrofitClient {
-    // USE THIS FOR ANDROID EMULATOR (10.0.2.2 maps to your host machine's localhost)
+    // FOR ANDROID EMULATOR
     // private const val BASE_URL = "http://10.0.2.2:3000/"
 
-    // USE THIS FOR PHYSICAL DEVICE ON SAME WIFI
+    // FOR PHYSICAL DEVICE ON SAME WIFI
      private const val BASE_URL = "http://10.26.127.70:3000/"
     private var apiService: ApiService? = null
 
-    /**
-     * Get ApiService instance
-     */
+    // Get ApiService instance
     fun getApiService(context: Context): ApiService {
         if (apiService == null) {
             apiService = createApiService(context)
@@ -30,9 +26,7 @@ object RetrofitClient {
         return apiService!!
     }
 
-    /**
-     * Create Retrofit ApiService
-     */
+    // Create Retrofit ApiService
     private fun createApiService(context: Context): ApiService {
         val tokenManager = TokenManager(context.applicationContext)
 
@@ -68,9 +62,7 @@ object RetrofitClient {
         return retrofit.create(ApiService::class.java)
     }
 
-    /**
-     * Reset client (useful for testing or logout)
-     */
+    // Reset client (for testing or logout)
     fun resetClient() {
         apiService = null
     }

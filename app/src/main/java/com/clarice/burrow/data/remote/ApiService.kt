@@ -1,4 +1,3 @@
-// File: app/src/main/java/com/clarice/burrow/data/remote/ApiService.kt
 package com.clarice.burrow.data.remote
 
 import com.clarice.burrow.ui.model.auth.RegisterRequest
@@ -19,7 +18,7 @@ import retrofit2.http.*
 // Retrofit API Service (defines all API endpoints)
 interface ApiService {
 
-    // ==================== AUTH ENDPOINTS ====================
+    // AUTH ENDPOINTS
 
     @POST("api/register")
     suspend fun register(
@@ -37,7 +36,7 @@ interface ApiService {
     ): Response<RefreshTokenResponse>
 
 
-    // ==================== USER ENDPOINTS ====================
+    // USER ENDPOINTS
 
     @GET("api/users/profile")
     suspend fun getProfile(): Response<ApiResponse<User>>
@@ -51,7 +50,7 @@ interface ApiService {
     suspend fun deleteAccount(): Response<ApiResponse<String>>
 
 
-    // ==================== SLEEP ENDPOINTS ====================
+    // SLEEP ENDPOINTS
 
     @POST("api/sleep/start")
     suspend fun startSleepSession(
@@ -80,7 +79,7 @@ interface ApiService {
         @Path("sessionId") sessionId: Int
     ): Response<ApiResponse<String>>
 
-    // ==================== JOURNAL ENDPOINTS ====================
+    // JOURNAL ENDPOINTS
     @POST("api/journals")
     suspend fun createJournal(@Body request: JournalRequest): Response<ApiResponse<Journal>>
 
@@ -99,14 +98,12 @@ interface ApiService {
     @DELETE("api/journals/{id}")
     suspend fun deleteJournal(@Path("id") id: Int): Response<ApiResponse<String>>
 
-    // ==================== MUSIC ENDPOINTS ====================
+    // MUSIC ENDPOINTS
     @GET("api/music")
     suspend fun getMusicList(): Response<ApiResponse<List<MusicTrack>>>
 }
 
-/**
- * Sleep request models
- */
+// Sleep request models
 data class StartSleepRequest(
     val start_time: String // ISO 8601 format
 )
@@ -116,9 +113,7 @@ data class EndSleepRequest(
     val sleep_quality: Int? = null // 1-5
 )
 
-/**
- * Sleep Statistics Response Model
- */
+// Sleep Statistics Response Model
 data class SleepStatistics(
     val total_sessions: Int,
     val average_duration: Int, // in minutes

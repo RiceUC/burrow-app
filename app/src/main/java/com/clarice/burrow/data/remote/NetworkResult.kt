@@ -4,10 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import retrofit2.Response
 
-/**
- * NetworkResult - Sealed class for handling API responses
- * Provides a clean way to handle Success, Error, and Loading states
- */
+// NetworkResult (Sealed class for handling API responses)
+// Provides a clean way to handle Success, Error, and Loading states
 sealed class NetworkResult<T>(
     val data: T? = null,
     val message: String? = null
@@ -17,24 +15,13 @@ sealed class NetworkResult<T>(
     class Loading<T> : NetworkResult<T>()
 }
 
-/**
- * Generic error response from backend to encapsulate different error formats.
- */
+// Generic error response from backend to encapsulate different error formats.
 data class ErrorResponse(val errors: Any?, val message: String?)
 
 
-/**
- * Extension function to safely handle API calls
- * Wraps API responses in NetworkResult for consistent error handling
- *
- * Usage:
- * val result = safeApiCall { apiService.getSomething() }
- * when (result) {
- *     is NetworkResult.Success -> // handle success
- *     is NetworkResult.Error -> // handle error
- *     is NetworkResult.Loading -> // handle loading
- * }
- */
+// Extension function to safely handle API calls
+// Wraps API responses in NetworkResult for consistent error handling
+
 suspend fun <T> safeApiCall(
     apiCall: suspend () -> Response<T>
 ): NetworkResult<T> {
@@ -56,10 +43,8 @@ suspend fun <T> safeApiCall(
     }
 }
 
-/**
- * Parse error message from backend response.
- * This function is designed to handle multiple common error response formats.
- */
+// Parse error message from backend response.
+// This function is designed to handle multiple common error response formats.
 private fun parseErrorMessage(errorBody: String?): String? {
     if (errorBody == null) return null
     val gson = Gson()

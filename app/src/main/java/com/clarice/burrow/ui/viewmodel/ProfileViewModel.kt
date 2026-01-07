@@ -13,9 +13,7 @@ import com.clarice.burrow.data.repository.UserRepository
 import com.clarice.burrow.ui.model.auth.User
 import kotlinx.coroutines.launch
 
-/**
- * ProfileViewModel - Handles user profile operations
- */
+// ProfileViewModel (Handles user profile operations)
 class ProfileViewModel(context: Context) : ViewModel() {
 
     private val apiService = RetrofitClient.getApiService(context)
@@ -25,16 +23,14 @@ class ProfileViewModel(context: Context) : ViewModel() {
         private set
 
     init {
-        // Remove automatic loading - let the screen trigger it
+        // Remove automatic loading (let the screen trigger it)
         // This prevents unnecessary API calls
     }
 
-    // ==================== LOAD PROFILE ====================
+    // LOAD PROFILE
 
-    /**
-     * Load user profile from backend
-     * Call this explicitly from the screen
-     */
+    // Load user profile from backend
+    // Call this explicitly from the screen
     fun loadProfile() {
         // Prevent multiple simultaneous loads
         if (profileState.isLoading) {
@@ -79,11 +75,9 @@ class ProfileViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== UPDATE PROFILE ====================
+    // UPDATE PROFILE
 
-    /**
-     * Update user profile
-     */
+    // Update user profile
     fun updateProfile(
         name: String? = null,
         birthdate: String? = null,
@@ -136,11 +130,9 @@ class ProfileViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== DELETE ACCOUNT ====================
+    // DELETE ACCOUNT
 
-    /**
-     * Delete user account
-     */
+    // Delete user account
     fun deleteAccount(onSuccess: () -> Unit) {
         profileState = profileState.copy(isDeleting = true, error = null)
         android.util.Log.d("ProfileViewModel", "Deleting account...")
@@ -176,19 +168,15 @@ class ProfileViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // ==================== HELPERS ====================
+    // HELPERS
 
-    /**
-     * Clear error message
-     */
+    // Clear error message
     fun clearError() {
         profileState = profileState.copy(error = null)
     }
 }
 
-/**
- * Profile UI State
- */
+// Profile UI State
 data class ProfileState(
     val user: User? = null,
     val isLoading: Boolean = false,
