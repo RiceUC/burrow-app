@@ -1,5 +1,7 @@
 package com.clarice.burrow.ui.view.music
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,8 +38,8 @@ import com.clarice.burrow.ui.viewmodel.MusicViewModel
 fun MusicListView(
     viewModel: MusicViewModel
 ) {
+    val context = LocalContext.current
     val tracks by viewModel.musicTracks.collectAsState()
-    val selectedTrack by viewModel.selectedTrack.collectAsState()
 
     val beforeSleepTracks = tracks.filter { it.category == MusicCategory.BEFORE_SLEEP }
     val duringSleepTracks = tracks.filter { it.category == MusicCategory.DURING_SLEEP }
@@ -46,7 +49,7 @@ fun MusicListView(
             .fillMaxSize()
             .background(Color(0xFF1E1B4B))
     ) {
-        // Background image (optional - uses same pattern as other screens)
+        // Background image
         Image(
             painter = painterResource(id = R.drawable.trackerbg),
             contentDescription = null,
@@ -72,7 +75,7 @@ fun MusicListView(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 16.dp),
-            contentPadding = PaddingValues(bottom = if (selectedTrack != null) 320.dp else 100.dp)
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             // Header
             item {
@@ -110,7 +113,8 @@ fun MusicListView(
                     track = track,
                     accentColor = Color(0xFF6B5FC7)
                 ) {
-                    viewModel.selectTrack(track)
+                    // Open YouTube externally
+                    openYouTubeVideo(context, track.videoId)
                 }
             }
 
@@ -129,29 +133,31 @@ fun MusicListView(
                     track = track,
                     accentColor = Color(0xFF9BB2FF)
                 ) {
-                    viewModel.selectTrack(track)
+                    // Open YouTube externally
+                    openYouTubeVideo(context, track.videoId)
                 }
             }
         }
+    }
+}
 
-        // Player Overlay
-        if (selectedTrack != null) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
-                shadowElevation = 16.dp,
-                tonalElevation = 8.dp,
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                color = Color.White
-            ) {
-                MusicPlayerView(
-                    track = selectedTrack!!,
-                    viewModel = viewModel,
-                    onClose = { viewModel.clearSelectedTrack() }
-                )
-            }
-        }
+/**
+ * Open YouTube video in YouTube app or browser
+ * Tries YouTube app first, falls back to web browser
+ */
+private fun openYouTubeVideo(context: android.content.Context, videoId: String) {
+    try {
+        // Try to open in YouTube app first
+        val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:$videoId"))
+        appIntent.putExtra("force_fullscreen", true)
+        context.startActivity(appIntent)
+    } catch (e: Exception) {
+        // Fallback to web browser if YouTube app not installed
+        val webIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://www.youtube.com/watch?v=$videoId")
+        )
+        context.startActivity(webIntent)
     }
 }
 
