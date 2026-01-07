@@ -285,8 +285,6 @@ fun NavGraph(
             }
         }
 
-
-
         // Music List Screen
         composable("music_list") {
             MainAppScaffold(
@@ -306,20 +304,31 @@ fun NavGraph(
             }
         }
 
-        // Edit Profile Screen
+        // Edit Profile Screen - NOW WITH NAVBAR
         composable("edit_profile") {
-            val profileViewModel = ProfileViewModel(context)
-            EditProfileScreen(
-                viewModel = profileViewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onLogout = {
-                    authViewModel.logout {
-                        navController.navigate("welcome") {
-                            popUpTo(0) { inclusive = true }
-                        }
+            MainAppScaffold(
+                currentRoute = "edit_profile",
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo("sleep_tracker") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 }
-            )
+            ) {
+                val profileViewModel = ProfileViewModel(context)
+                EditProfileScreen(
+                    viewModel = profileViewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onLogout = {
+                        authViewModel.logout {
+                            navController.navigate("welcome") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 }
