@@ -13,8 +13,11 @@ import java.util.concurrent.TimeUnit
  * RetrofitClient - Singleton for Retrofit instance
  */
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.18.245:3000/"
+    // USE THIS FOR ANDROID EMULATOR (10.0.2.2 maps to your host machine's localhost)
+    // private const val BASE_URL = "http://10.0.2.2:3000/"
 
+    // USE THIS FOR PHYSICAL DEVICE ON SAME WIFI
+     private const val BASE_URL = "http://10.26.127.70:3000/"
     private var apiService: ApiService? = null
 
     /**
