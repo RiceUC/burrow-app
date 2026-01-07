@@ -214,15 +214,24 @@ class AuthViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             // Check if logged in and restore userId
             authRepository.isLoggedIn().collect { isLoggedIn ->
-                _isLoggedIn.value = isLoggedIn
                 android.util.Log.d("AuthViewModel", "checkLoginStatus: isLoggedIn=$isLoggedIn")
                 
                 if (isLoggedIn) {
                     // Restore userId from token manager
                     authRepository.getCurrentUserId().collect { userId ->
-                        _userId.value = userId
-                        android.util.Log.d("AuthViewModel", "Restored userId from tokenManager: $userId")
+                        if (userId != null) {
+                            _userId.value = userId
+                            _isLoggedIn.value = true
+                            android.util.Log.d("AuthViewModel", "Restored userId from tokenManager: $userId")
+                        } else {
+                            // Inconsistent state: Logged in but no UserId -> Force Logout
+                            android.util.Log.e("AuthViewModel", "Inconsistent state: Logged in but userId is null. Forcing logout.")
+                            logout { }
+                        }
                     }
+                } else {
+                    _isLoggedIn.value = false
+                    _userId.value = null
                 }
             }
         }

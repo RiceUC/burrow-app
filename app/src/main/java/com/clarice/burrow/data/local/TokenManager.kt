@@ -91,7 +91,7 @@ class TokenManager(private val context: Context) {
     // Check if user is logged in
     fun isLoggedIn(): Flow<Boolean> {
         return context.dataStore.data.map { preferences ->
-            preferences[ACCESS_TOKEN_KEY] != null
+            preferences[ACCESS_TOKEN_KEY] != null && preferences[USER_ID_KEY] != null
         }
     }
 }

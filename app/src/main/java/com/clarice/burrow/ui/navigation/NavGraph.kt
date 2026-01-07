@@ -32,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import com.clarice.burrow.ui.view.EditProfileScreen
+import com.clarice.burrow.ui.viewmodel.ProfileViewModel
 
 // ==================== MAIN APP SCAFFOLD - NAVBAR ALWAYS VISIBLE ====================
 @Composable
@@ -297,37 +299,27 @@ fun NavGraph(
                     }
                 }
             ) {
-                PlaceholderScreen(
-                    title = "Music",
-                    currentRoute = "music_list"
+                val musicViewModel: com.clarice.burrow.ui.viewmodel.MusicViewModel = viewModel()
+                com.clarice.burrow.ui.view.music.MusicListView(
+                    viewModel = musicViewModel
                 )
             }
         }
 
         // Edit Profile Screen
         composable("edit_profile") {
-            MainAppScaffold(
-                currentRoute = "edit_profile",
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo("sleep_tracker") { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            ) {
-                PlaceholderScreen(
-                    title = "Profile",
-                    currentRoute = "edit_profile",
-                    onLogout = {
-                        authViewModel.logout {
-                            navController.navigate("welcome") {
-                                popUpTo(0) { inclusive = true }
-                            }
+            val profileViewModel = ProfileViewModel(context)
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onLogout = {
+                    authViewModel.logout {
+                        navController.navigate("welcome") {
+                            popUpTo(0) { inclusive = true }
                         }
                     }
-                )
-            }
+                }
+            )
         }
     }
 }

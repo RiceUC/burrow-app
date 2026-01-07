@@ -137,4 +137,7 @@ dependencies {
 // material (for SwipeToDismiss) and foundation
     implementation("androidx.compose.material:material:1.6.8")
     implementation("androidx.compose.foundation:foundation:1.6.8")
+
+    // YOUTUBE PLAYER
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 }

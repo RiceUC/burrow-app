@@ -12,6 +12,7 @@ import com.clarice.burrow.ui.model.journal.JournalRequest
 import com.clarice.burrow.ui.model.journal.Journal
 import com.clarice.burrow.ui.model.journal.JournalSingleResponse
 import com.clarice.burrow.ui.model.journal.JournalUpdateRequest
+import com.clarice.burrow.ui.model.music.MusicTrack
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -97,6 +98,10 @@ interface ApiService {
 
     @DELETE("api/journals/{id}")
     suspend fun deleteJournal(@Path("id") id: Int): Response<ApiResponse<String>>
+
+    // ==================== MUSIC ENDPOINTS ====================
+    @GET("api/music")
+    suspend fun getMusicList(): Response<ApiResponse<List<MusicTrack>>>
 }
 
 /**
