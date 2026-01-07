@@ -43,6 +43,12 @@ fun EditProfileScreen(
     val profileState = viewModel.profileState
     val user = profileState.user
 
+    // Trigger load only once when screen opens
+    LaunchedEffect(Unit) {
+        android.util.Log.d("EditProfileScreen", "Triggering profile load...")
+        viewModel.loadProfile()
+    }
+
     // Form state
     var name by remember(user) { mutableStateOf(user?.name ?: "") }
     var gender by remember(user) { mutableStateOf(user?.gender ?: "") }
@@ -110,7 +116,7 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Profile Avatar
+            // Profile Icon (Material Icon instead of gradient box)
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -119,31 +125,17 @@ fun EditProfileScreen(
                     modifier = Modifier
                         .size(90.dp)
                         .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF6B5FC7), Color(0xFF9BB2FF))
-                            )
-                        ),
+                        .background(Color(0xFF8B7FDB)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = (user?.name?.firstOrNull()?.uppercase() ?: "?"),
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(50.dp)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Username (non-editable)
-            Text(
-                text = "@${user?.username ?: "username"}",
-                fontSize = 14.sp,
-                color = Color(0xFFBFC7FF),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -368,7 +360,17 @@ fun EditProfileScreen(
                     .background(Color.Black.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Color.White)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Loading profile...",
+                        color = Color.White,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
 

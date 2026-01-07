@@ -25,37 +25,56 @@ class ProfileViewModel(context: Context) : ViewModel() {
         private set
 
     init {
-        loadProfile()
+        // Remove automatic loading - let the screen trigger it
+        // This prevents unnecessary API calls
     }
 
     // ==================== LOAD PROFILE ====================
 
     /**
      * Load user profile from backend
+     * Call this explicitly from the screen
      */
     fun loadProfile() {
+        // Prevent multiple simultaneous loads
+        if (profileState.isLoading) {
+            android.util.Log.w("ProfileViewModel", "Load already in progress, skipping")
+            return
+        }
+
         profileState = profileState.copy(isLoading = true, error = null)
+        android.util.Log.d("ProfileViewModel", "Starting profile load...")
 
         viewModelScope.launch {
-            val result = userRepository.getProfile()
+            try {
+                val result = userRepository.getProfile()
 
-            when (result) {
-                is NetworkResult.Success -> {
-                    profileState = profileState.copy(
-                        isLoading = false,
-                        user = result.data?.data,
-                        error = null
-                    )
+                when (result) {
+                    is NetworkResult.Success -> {
+                        android.util.Log.d("ProfileViewModel", "Profile loaded successfully: ${result.data?.data}")
+                        profileState = profileState.copy(
+                            isLoading = false,
+                            user = result.data?.data,
+                            error = null
+                        )
+                    }
+                    is NetworkResult.Error -> {
+                        android.util.Log.e("ProfileViewModel", "Failed to load profile: ${result.message}")
+                        profileState = profileState.copy(
+                            isLoading = false,
+                            error = result.message ?: "Failed to load profile"
+                        )
+                    }
+                    is NetworkResult.Loading -> {
+                        profileState = profileState.copy(isLoading = true)
+                    }
                 }
-                is NetworkResult.Error -> {
-                    profileState = profileState.copy(
-                        isLoading = false,
-                        error = result.message ?: "Failed to load profile"
-                    )
-                }
-                is NetworkResult.Loading -> {
-                    profileState = profileState.copy(isLoading = true)
-                }
+            } catch (e: Exception) {
+                android.util.Log.e("ProfileViewModel", "Exception loading profile", e)
+                profileState = profileState.copy(
+                    isLoading = false,
+                    error = "Failed to load profile: ${e.message}"
+                )
             }
         }
     }
@@ -74,34 +93,45 @@ class ProfileViewModel(context: Context) : ViewModel() {
         onSuccess: () -> Unit
     ) {
         profileState = profileState.copy(isUpdating = true, error = null)
+        android.util.Log.d("ProfileViewModel", "Updating profile...")
 
         viewModelScope.launch {
-            val result = userRepository.updateProfile(
-                name = name,
-                birthdate = birthdate,
-                defaultSoundDuration = defaultSoundDuration,
-                reminderTime = reminderTime,
-                gender = gender
-            )
+            try {
+                val result = userRepository.updateProfile(
+                    name = name,
+                    birthdate = birthdate,
+                    defaultSoundDuration = defaultSoundDuration,
+                    reminderTime = reminderTime,
+                    gender = gender
+                )
 
-            when (result) {
-                is NetworkResult.Success -> {
-                    profileState = profileState.copy(
-                        isUpdating = false,
-                        user = result.data?.data,
-                        error = null
-                    )
-                    onSuccess()
+                when (result) {
+                    is NetworkResult.Success -> {
+                        android.util.Log.d("ProfileViewModel", "Profile updated successfully")
+                        profileState = profileState.copy(
+                            isUpdating = false,
+                            user = result.data?.data,
+                            error = null
+                        )
+                        onSuccess()
+                    }
+                    is NetworkResult.Error -> {
+                        android.util.Log.e("ProfileViewModel", "Failed to update profile: ${result.message}")
+                        profileState = profileState.copy(
+                            isUpdating = false,
+                            error = result.message ?: "Failed to update profile"
+                        )
+                    }
+                    is NetworkResult.Loading -> {
+                        profileState = profileState.copy(isUpdating = true)
+                    }
                 }
-                is NetworkResult.Error -> {
-                    profileState = profileState.copy(
-                        isUpdating = false,
-                        error = result.message ?: "Failed to update profile"
-                    )
-                }
-                is NetworkResult.Loading -> {
-                    profileState = profileState.copy(isUpdating = true)
-                }
+            } catch (e: Exception) {
+                android.util.Log.e("ProfileViewModel", "Exception updating profile", e)
+                profileState = profileState.copy(
+                    isUpdating = false,
+                    error = "Failed to update profile: ${e.message}"
+                )
             }
         }
     }
@@ -113,24 +143,35 @@ class ProfileViewModel(context: Context) : ViewModel() {
      */
     fun deleteAccount(onSuccess: () -> Unit) {
         profileState = profileState.copy(isDeleting = true, error = null)
+        android.util.Log.d("ProfileViewModel", "Deleting account...")
 
         viewModelScope.launch {
-            val result = userRepository.deleteAccount()
+            try {
+                val result = userRepository.deleteAccount()
 
-            when (result) {
-                is NetworkResult.Success -> {
-                    profileState = profileState.copy(isDeleting = false)
-                    onSuccess()
+                when (result) {
+                    is NetworkResult.Success -> {
+                        android.util.Log.d("ProfileViewModel", "Account deleted successfully")
+                        profileState = profileState.copy(isDeleting = false)
+                        onSuccess()
+                    }
+                    is NetworkResult.Error -> {
+                        android.util.Log.e("ProfileViewModel", "Failed to delete account: ${result.message}")
+                        profileState = profileState.copy(
+                            isDeleting = false,
+                            error = result.message ?: "Failed to delete account"
+                        )
+                    }
+                    is NetworkResult.Loading -> {
+                        profileState = profileState.copy(isDeleting = true)
+                    }
                 }
-                is NetworkResult.Error -> {
-                    profileState = profileState.copy(
-                        isDeleting = false,
-                        error = result.message ?: "Failed to delete account"
-                    )
-                }
-                is NetworkResult.Loading -> {
-                    profileState = profileState.copy(isDeleting = true)
-                }
+            } catch (e: Exception) {
+                android.util.Log.e("ProfileViewModel", "Exception deleting account", e)
+                profileState = profileState.copy(
+                    isDeleting = false,
+                    error = "Failed to delete account: ${e.message}"
+                )
             }
         }
     }
